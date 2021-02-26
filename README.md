@@ -136,11 +136,6 @@ In some cases you may need to convert a column into "Factors" this can be done v
 You can confirm this worked by typing
 `levels(db$Varname)`
 
-# Misc
-Here are a list of notes that may be useful but did not fit specifically in any section above.
-
-
-
 
 ## For my use (sites on how to use Git with RStudio)
 [Guide to initial setup with Mac](https://medium.com/@sorenlind/create-pdf-reports-using-r-r-markdown-latex-and-knitr-on-macos-high-sierra-e7b5705c9fd)
