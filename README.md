@@ -14,9 +14,10 @@ Before we start there are a few things we need to make this go well.
 2. Install [R](https://www.r-project.org/)
 3. Install [RStudio](https://www.rstudio.com/products/rstudio/download/)
 4. Install [RTools](https://cran.r-project.org/bin/windows/Rtools/)
-5. Install [tinytex](https://yihui.org/tinytex/)
-6. Install [MikTex](https://miktex.org/download) (if you are using Windows) or [MacTex](https://medium.com/@sorenlind/create-pdf-reports-using-r-r-markdown-latex-and-knitr-on-macos-high-sierra-e7b5705c9fd) (if you are using a Mac)
+5. Install MikTeX for [OSX](https://miktex.org/download) or [Windows]((https://miktex.org/download). For OSX an alternative can be [MacTex](https://medium.com/@sorenlind/create-pdf-reports-using-r-r-markdown-latex-and-knitr-on-macos-high-sierra-e7b5705c9fd) (if you are using a Mac)
+6. Install [tinytex](https://yihui.org/tinytex/)
 7. Microsoft Word (it's free with your UCalgary account)
+
 
 # Create a GitHub Account
 
