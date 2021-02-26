@@ -14,9 +14,7 @@ Before we start there are a few things we need to make this go well.
 2. Install [R](https://www.r-project.org/)
 3. Install [RStudio](https://www.rstudio.com/products/rstudio/download/)
 4. Install [RTools](https://cran.r-project.org/bin/windows/Rtools/) (this is only if you are running Windows)
-5. Install MikTeX for [OSX](https://miktex.org/download) or [Windows]((https://miktex.org/download). For OSX an alternative can be [MacTex](https://medium.com/@sorenlind/create-pdf-reports-using-r-r-markdown-latex-and-knitr-on-macos-high-sierra-e7b5705c9fd) (if you are using a Mac)
-6. Install [tinytex](https://yihui.org/tinytex/)
-7. Microsoft Word (it's free with your UCalgary account)
+5. Microsoft Word (it's free with your UCalgary account)
 
 
 # Create a GitHub Account
@@ -137,8 +135,13 @@ In some cases you may need to convert a column into "Factors" this can be done v
 You can confirm this worked by typing
 `levels(db$Varname)`
 
+## Misc Installation
+Although we won't be doing this in this workshop its also possible to knit documents to PDF. Which requires either `tinytex` or `MikTex`. The installation process usually requires a bit of troubleshooting which is why we are skipping it for this course
 
-## For my use (sites on how to use Git with RStudio)
+1. Install MikTeX for [OSX](https://miktex.org/download) or [Windows]((https://miktex.org/download). For OSX an alternative can be [MacTex](https://medium.com/@sorenlind/create-pdf-reports-using-r-r-markdown-latex-and-knitr-on-macos-high-sierra-e7b5705c9fd) (if you are using a Mac)
+2. Install [tinytex](https://yihui.org/tinytex/)
+
+## For Andrew's use (sites on how to use Git with RStudio)
 [Guide to initial setup with Mac](https://medium.com/@sorenlind/create-pdf-reports-using-r-r-markdown-latex-and-knitr-on-macos-high-sierra-e7b5705c9fd)
 
 https://jennybc.github.io/2014-05-12-ubc/ubc-r/session03_git.html
