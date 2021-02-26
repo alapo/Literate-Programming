@@ -1,6 +1,6 @@
-# Literate-Programming
+# Literate Programming
 
-This is the official GitHub page for the workshop on Reproducible Science for Busy Researchers: How to save time using Literate Programming.
+This is the official GitHub page for the workshop on **Reproducible Science for Busy Researchers: How to save time using Literate Programming**.
 *This is a work in progress*
 
 A copy of a typical project is shown in the `/example` folder. The remainder of this ReadMe is going to walk you through the installation process. I would recommend following along the YouTube video [here](amazon.com). 
