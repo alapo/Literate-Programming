@@ -23,8 +23,8 @@ Before we start there are a few things we need to make this go well.
 
 If you don't already have one, I would suggest creating an account on GitHub. There are 2 reasons for this
 
-1 - It will allow you to post questions for this workshop
-2 - It will come in handy when installing packages.
+1. It will allow you to post questions for this workshop
+2. It will come in handy when installing packages.
 
 ## Creating a GitHub Authentication Key
 Create your own [GitHub token](https://happygitwithr.com/github-pat.html) and add it to *.Renviron 
