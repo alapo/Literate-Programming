@@ -18,7 +18,7 @@ Links to the workshop's modules (aka recordings) will be posted here as they bec
 8. Plotting using the Grammar of Graphics (ggplot)
 
 
-A copy of a typical project is shown in the `/example` folder. The remainder of this ReadMe is going to walk you through the installation process. I would recommend following along the YouTube video [here](amazon.com). 
+A copy of a typical project is shown in the `/example` folder. The remainder of this ReadMe is going to walk you through the installation process. I would recommend following along the YouTube video [here](). Please wait until we reach this module to start the installation process.
 
 # Installation
 ## Installing Required Programs
