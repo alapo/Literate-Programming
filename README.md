@@ -3,9 +3,25 @@
 This is the official GitHub page for the workshop on **Reproducible Science for Busy Researchers: How to save time using Literate Programming**.
 *This is a work in progress*
 
+
+# Module Recordings
+
+Links to the workshop's modules (aka recordings) will be posted here as they become available.
+
+1. The advantages of Reproducible Science Workflows
+2. Asking a question
+3. Installation
+4. Essentials of RMarkdown
+5. Introductory Statistics #1
+6. Introductory Statistics #2
+7. Data Wrangling
+8. Plotting using the Grammar of Graphics (ggplot)
+
+
 A copy of a typical project is shown in the `/example` folder. The remainder of this ReadMe is going to walk you through the installation process. I would recommend following along the YouTube video [here](amazon.com). 
 
-# Installing Required Programs
+# Installation
+## Installing Required Programs
 
 Before we start there are a few things we need to make this go well.
 
@@ -17,17 +33,17 @@ Before we start there are a few things we need to make this go well.
 5. Microsoft Word (it's free with your UCalgary account)
 
 
-# Create a GitHub Account
+## Create a GitHub Account
 
 If you don't already have one, I would suggest creating an account on GitHub. There are 2 reasons for this
 
 1. It will allow you to post questions for this workshop
 2. It will come in handy when installing packages.
 
-## Creating a GitHub Authentication Key
+### Creating a GitHub Authentication Key
 Create your own [GitHub token](https://happygitwithr.com/github-pat.html) and add it to *.Renviron 
 
-# Running R for the first time. 
+## Running R for the first time. 
 
 In the Console run
 
@@ -62,7 +78,7 @@ There are a few packages where using pacman does not work. These include
 - apastats
 In order for these packages to be installed you will need to use the devtools package (only the first time). 
 
-# Using References
+## Using References
 For using references we have 3 packages we need to install
 1. Install [Zotero](https://www.zotero.org/download/) 
 2. Install [Better BibTex Plugin](https://retorque.re/zotero-better-bibtex/installation/)
@@ -79,7 +95,7 @@ Screenshots and a more detailed guide are forthcoming but take a look at the You
 
 The first thing to do is create a New Project in RStudio. File>New Project and create a folder on your computer that works. In my example this will be `\MyProjectName` you'll notice on your computer a `.Rproj` file is now created. When you want to make edits to your document I would recommend opening this file.
 
-## Types of documents
+# Types of documents
 In order to make things simple I will break this up into a few sections. The goal here is to make your manuscript as sustainable as possible which means if a a co-author or committee member asks you to change "one little thing" you do not have an endless number of manual edits to make. In order to do this I have 3 separate documents I make. You could technically put all of this into the `.Rmd` document but that will slow down your compiling time substantially which is why I like to split them up into seperate files.
 
 - 1 R script called `createPlots.R`
