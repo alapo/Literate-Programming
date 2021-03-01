@@ -1,12 +1,14 @@
 # Literate Programming
 
-This is the official GitHub page for the workshop on **Reproducible Science for Busy Researchers: How to save time using Literate Programming**.
-*This is a work in progress*
+This is the official GitHub page for the workshop on **Reproducible Science for Busy Researchers: How to save time using Literate Programming**. 
+
+
+*This repository will be updated as we progress through the workshop*
 
 
 # Module Recordings
 
-Links to the workshop's modules (aka recordings) will be posted here as they become available.
+Links to the workshop's recordings will be posted here as they become available.
 
 1. The advantages of Reproducible Science Workflows
 2. Asking a question
