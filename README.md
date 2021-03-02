@@ -5,6 +5,9 @@ This is the official GitHub page for the workshop on **Reproducible Science for 
 
 *This repository will be updated as we progress through the workshop*
 
+# Survey
+
+Please take time to fill out the [Google Form](https://forms.gle/MCbvtVPYFUKL74Q37) to help me tailor content to you throughout the workshop.
 
 # Module Recordings
 
