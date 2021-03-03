@@ -2,8 +2,11 @@
 
 This is the official GitHub page for the workshop on **Reproducible Science for Busy Researchers: How to save time using Literate Programming**. 
 
-
 *This repository will be updated as we progress through the workshop*
+
+# Zoom Links
+
+You should have received an email from REALISE once you registered with Zoom links for every module. If not, please visit the workshop's page on the REALISE website [here](https://events.ucalgary.ca/HBI-REALISE-Program/#!view/event/event_id/266920)
 
 # Survey
 
