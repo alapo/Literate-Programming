@@ -6,7 +6,7 @@ This is the official GitHub page for the workshop on **Reproducible Science for 
 
 # Zoom Links
 
-You should have received an email from REALISE once you registered with Zoom links for every module. If not, please visit the workshop's page on the REALISE website [here](https://events.ucalgary.ca/HBI-REALISE-Program/#!view/event/event_id/266920)
+You should have received an email from REALISE once you registered with Zoom links for every module. Please make sure to check your SPAM folder. If you are still unable to find it, please visit the workshop's page on the REALISE website [here](https://events.ucalgary.ca/HBI-REALISE-Program/#!view/event/event_id/266920).
 
 # Survey
 
