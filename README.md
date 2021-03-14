@@ -18,7 +18,7 @@ Links to the workshop's recordings will be posted here as they become available.
 
 1. [The advantages of Reproducible Science Workflows](https://youtu.be/40w6iPhispU)
 2. [Finding Help](https://youtu.be/tYyGwMBEg68)
-3. Installation
+3. [Installation](https://youtu.be/Ol-p-vkaMBo)
 4. Essentials of RMarkdown
 5. Introductory Statistics #1
 6. Introductory Statistics #2
