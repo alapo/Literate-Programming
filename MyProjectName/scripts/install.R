@@ -2,7 +2,7 @@
 # This script is meant to be run on your first install. You can delete it after you run it without errors
 
 options(repos = getOption("repos")["CRAN"])
-install.packages(c("devtools", "BiocManager", "pacman", "remotes", "ggstatsplot", "rmarkdown", "credentials", "ggstatsplot"), dependencies = TRUE) # rest omitted
+install.packages(c("devtools", "BiocManager", "pacman", "remotes", "ggstatsplot", "rmarkdown", "credentials"), dependencies = TRUE) # rest omitted
 
 # Creating a GitHub Personal Token Key
 credentials::set_github_pat()
