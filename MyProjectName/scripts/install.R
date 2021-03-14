@@ -12,13 +12,10 @@ remotes::install_github("anthonynorth/rscodeio") # install the package
 rscodeio::install_theme() # install the theme
  
 # remotes installation.
-remotes::install_github("easystats/easystats")
-remotes::install_github("easystats/report")  # You only need to do that once
-remotes::install_github("easystats/correlation")
+remotes::install_github("easystats/easystats") # installs the whole easystats suite
 remotes::install_github("davidgohel/officedown")
 devtools::install_github('achetverikov/apastats', subdir='apastats')
 devtools::install_github("benmarwick/wordcountaddin", type = "source", dependencies = TRUE)
-devtools::install_github('rstudio/rmarkdown')
 remotes::install_github("dcomtois/pathToClip")
 devtools::install_github("nevrome/wellspell.addin") #github.com/nevrome/wellspell.addin
 devtools::install_github("nevrome/LanguageToolR")
