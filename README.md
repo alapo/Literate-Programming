@@ -26,3 +26,12 @@ Links to the workshop's recordings will be posted here as they become available.
 8. Plotting using the Grammar of Graphics (ggplot)
 
 
+# Installation Links
+
+1. [R](https://cloud.r-project.org/)
+2. [RStudio](https://rstudio.com/products/rstudio/download/)
+3. [RTools](https://cran.r-project.org/bin/windows/Rtools/) (Windows Only)
+4. [Git](https://git-scm.com/downloads)
+5. [Zotero](https://www.zotero.org/download/) 
+6. [BetterBibTex](https://retorque.re/zotero-better-bibtex/installation/)
+
