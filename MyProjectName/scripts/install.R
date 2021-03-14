@@ -26,9 +26,9 @@ easystats::easystats_update() # updates easystats packages
 
 if (!require("pacman")) install.packages("pacman") # if pacman is not installed, the install it.
 # load/install required packages
-pacman::p_load(addinslist, arsenal, cgwtools, colourpicker, esquisse, ggpubr, ggstatsplot, 
+pacman::p_load(addinslist, arsenal, cgwtools, colourpicker, easystats, esquisse, ggpubr, ggstatsplot, 
 	       ggThemeAssist, googlesheets4, hablar, Hmisc, janitor, jtools, officer, parameters, 
-	       remotes, report, rio, Rmisc, rstatix, see, sjmisc, sjPlot, tidyverse) 
+	       rio, Rmisc, rstatix, see, sjmisc, sjPlot, tidyverse) 
 
 rio::install_formats() # will install packages required by rio to function
 
