@@ -16,15 +16,15 @@ Please take time to fill out the [Google Form](https://forms.gle/MCbvtVPYFUKL74Q
 
 Links to the workshop's recordings will be posted here as they become available.
 
-* 1. [The advantages of Reproducible Science Workflows](https://youtu.be/40w6iPhispU)
-* 2. [Finding Help](https://youtu.be/tYyGwMBEg68)
-* 3. [Installation](https://youtu.be/Ol-p-vkaMBo)
-	+ [Already have R Installed?](https://youtu.be/aE9_lGXlJ5U)
-* 4. Essentials of RMarkdown
-* 5. Introductory Statistics #1
-* 6. Introductory Statistics #2
-* 7. Data Wrangling
-* 8. Plotting using the Grammar of Graphics (ggplot)
+1. [The advantages of Reproducible Science Workflows](https://youtu.be/40w6iPhispU)
+2. [Finding Help](https://youtu.be/tYyGwMBEg68)
+3. [Installation](https://youtu.be/Ol-p-vkaMBo)
+	* [Already have R Installed?](https://youtu.be/aE9_lGXlJ5U)
+4. Essentials of RMarkdown
+5. Introductory Statistics #1
+6. Introductory Statistics #2
+7. Data Wrangling
+8. Plotting using the Grammar of Graphics (ggplot)
 
 
 # Installation Links
