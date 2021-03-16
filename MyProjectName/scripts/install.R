@@ -10,9 +10,19 @@ credentials::set_github_pat()
 # if you want a dark theme then run the following code
 remotes::install_github("anthonynorth/rscodeio") # install the package
 rscodeio::install_theme() # install the theme
- 
+
+# easystats installation
+
+	# if you are on Windows use this line
+	remotes::install_github("easystats/easystats") # installs the whole easystats suite
+
+	# if you are on a Mac use these lines
+	install.packages(c("insight", "bayestestR", "parameters", "performance", "effectsize", "correlation", "modelbased", "see")) # note the see pkg
+	remotes::install_github("easystats/report")
+	remotes::install_github("easystats/easystats")
+
 # remotes installation.
-remotes::install_github("easystats/easystats") # installs the whole easystats suite
+easystats::easystats_update() # updates easystats packages
 remotes::install_github("davidgohel/officedown")
 devtools::install_github('achetverikov/apastats', subdir='apastats')
 devtools::install_github("benmarwick/wordcountaddin", type = "source", dependencies = TRUE)
@@ -22,7 +32,6 @@ devtools::install_github("nevrome/LanguageToolR")
 devtools::install_github("fkeck/quickview")
 
 LanguageToolR::lato_quick_setup()
-easystats::easystats_update() # updates easystats packages
 
 if (!require("pacman")) install.packages("pacman") # if pacman is not installed, the install it.
 # load/install required packages
