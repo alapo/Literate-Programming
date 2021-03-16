@@ -26,10 +26,16 @@ If applicable, add screenshots to help explain your problem. If you are on a Mac
 **sessionInfo()**
 In your Console, type `devtools::session_info()` and paste it in the code section below. This allows me to evaluate your R environment for any issues.
 
+
+<details open>
+  <summary>devtools::session_info()</summary>
 ```
 # REMOVE THIS LINE AND PASTE OUTPUT FROM 
 devtools::session_info()
 ```
+  </details>
+
+
 
 **Additional context**
 Add any other context about the problem here.
