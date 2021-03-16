@@ -35,4 +35,4 @@ Links to the workshop's recordings will be posted here as they become available.
 4. [Git](https://git-scm.com/downloads)
 5. [Zotero](https://www.zotero.org/download/) 
 6. [BetterBibTex](https://retorque.re/zotero-better-bibtex/installation/)
-
+7. Download the [MyProjectName](https://downgit.github.io/#/home?url=https://github.com/alapo/Literate-Programming/tree/main/MyProjectName) folder from this repository and save it somewhere on your computer (remember where you put it)
