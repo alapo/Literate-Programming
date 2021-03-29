@@ -1,474 +1,340 @@
 ---
-title: "Data Report for ACAP Study"
-output:
-  bookdown::word_document2:
-    fig_caption: yes
-    reference_docx: styles/Brain_template.docx
-  bookdown::pdf_document2:
-    toc: yes
-    latex_engine: xelatex
-    highlight: "espresso"
-    fig_caption: yes
-    #includes:
-      #in_header: styles/my_header.tex
-monofont: "Courier New"
+date: "`r Sys.Date()`"
+author: "Dr. Andrew Lapointe"
+title: "Module 05"
+output: 
+  officedown::rdocx_document:
+    reference_docx: styles/template.docx          # This is the template that will style my document when its knit
 link-citations: yes
 linkcolor: red
 citecolor: blue
-site: bookdown::bookdown_site
-#bibliography: styles/MyBibliography.bib # you will need to export your own bibliography
-csl: styles/Citation Styles/spectroscopy-letters.csl
-always_allow_html: true
+#bibliography: G:/My Drive/ZoteroRPlugin/My Library.bib  # you will need to export your own bibliography
+zotero: TRUE
+#csl: styles/Citation Styles/spectroscopy-letters.csl    # This sets the style of formatting for references
 ---
 
 ```{r setup, include=FALSE, cache=FALSE, echo=FALSE}
-pacman::p_load(readxl, knitr, dplyr, apastats)
-#devtools::install_github("haozhu233/kableExtra", force = T)
-mriLocations <- read_excel("data/mriLocations.xlsx", sheet = "Sheet1") %>% # import your dataset
-    dplyr::select(c("Code", "Location"))
-load("data/stats.RData") #load the data created from stats.R
-load("data/demo.RData")
-load("data/tables.RData") # loads some
-load("data/freqTables.RData")
-use_betterbiblatex = TRUE
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(apastats,tidyverse, officedown, officer) # Load required packages
 
-tbl_datacheck1 <- tbl.datacheck1
-
-```
-
-```{r global_options, echo=FALSE}
-knitr::opts_chunk$set(fig.align = 'center',
-                      fig.pos = 'H',
+knitr::opts_chunk$set(fig.cap = TRUE,
                       fig.path = 'images/',
                       echo = FALSE,
                       warning = FALSE, 
                       message = FALSE,
                       include = TRUE,
-                      out.height="100%",  out.width="100%",
-                      dpi = 300)
+                      dpi = 300,
+                      crop = TRUE # This will remove the whitespace surrounding an image see here: https://bookdown.org/yihui/rmarkdown-cookbook/crop-plot.html
+                      # The following chunks only work with PDF outputs
+                      #fig.pos = 'H', # only works with PDFs
+                      #fig.align = 'center', # only works with PDFs
+                      #out.height="100%",  out.width="100%") # only works with PDFs
+)
+
+# Start loading data into the environment
+use_betterbiblatex = TRUE
+
 ```
 
-\pagebreak
+# Table of content
 
-Andrew P. Lapointe^1^, PhD, Chris C. Duszynski^1^, Ashley L. Ware^2^, PhD, Jeff F. Dunn^1^, PhD, Keith O. Yeates^2^, PhD.
-
-<br> <br>
-
-**Author Affiliations:**
-
-^1^ Department of Radiology, Cummins School of Medicine, University of Calgary
-
-<br> </br>
-
-Teaching Research and Wellness Building, Experimental Imaging Centre (Level P2E), 3280 Hospital Drive NW Calgary, AB, Canada T2N 4Z6
-
-^2^ Department of Psychology, University of Calgary
-
-^3^ Integrated Concussion Research Group??
-
-<br> <br>
-
-*Author email addresses*
-
-<andrew.lapointe@ucalgary.ca>
-
-<christopher.duszynsk@ucalgary.ca>
-
-<ashley.ware@ucalgary.ca>
-
-<dunnj@ucalgary.ca>
-
-<kyeates@ucalgary.ca>
-
-<br> <br>
+<!---BLOCK_TOC--->
 
 \pagebreak
 
-# Meeting Notes Feb-16
+# Part 1
 
-Great meeting. We discussed some alterations to the statistics and writing. This document is a quick report on the items we discussed. General meeting comments can be found in `misc/ACAP Meeting Feb-16.gslides`.
-
-1.  Comparisons between the two groups by location with effect sizes
-
--   Send these to Keith (2 Locations x 6 fNIRS Metrics )
--   Confirm that we can remove both the 1-Back and Finger-Tapping task to simplify the models
-
-2.  Have a stronger rationale for looking into the DTI
-
--   Use the fNIRS results in part 1 to rationalize using the DTI in part 2.
-
-3.  Re-rerun models using only FA and try using models that incorporate both post-acute and chronic DTI measures without using a change score
-
--   Can also attempt to use ONLY post-acute or chronic
--   Continue using the data which was normalized for Gender and Age using the larger A-CAP dataset
--   Ashley recommended attempting to use non-parametric stats for the comparisons
-
-4.  Give a list of symptoms questionnaires that we could use to run some analyses. Keith mentionned evaluating the changes in fNIRS alongside symptoms. Was not a sure thing but worth running just in case we decide to use it.
-
--   Answer the question "***Do fNIRS measures differ between groups due to symptoms?***"
-
-5.  Writing
-
--   Remove DTI from the introduction.
--   Bring the DTI in at the end to confirm the fNIRS data
--   In my DTI figures, remove the gender emojis and replace them with "M" and "F"
-
-# Can we remove finger-tapping and Back1?
-
-```{r echo=TRUE, eval=TRUE}
-load("data/df-nirs.RData")
-
+```{r part1a, echo=TRUE}
 # Load/Install required packages ---------------------
 if (!require("pacman")) install.packages("pacman") # if pacman is not installed, the install it.
-pacman::p_load(tidyverse, report, googlesheets4, janitor, remotes, rstatix, ggpubr, ggstatsplot, jtools, sjPlot, sjmisc, parameters, emmeans) # load/install required packages
+pacman::p_load(tidyverse, report, googlesheets4, janitor, knitr, remotes, rstatix, ggpubr, ggstatsplot, jtools, sjPlot, sjmisc, parameters) # load/install required packages
+
+# Load your data ----------
+df <- read_sheet("https://docs.google.com/spreadsheets/d/1fFVmBFpdAKxzLMT8dx7pZm48mo9CE3kIwYhrkaZj7NM", sheet = "1") # requires 'googlesheets4' library
 ```
 
-Summary statistics are shown in Table \@ref(tab:SummaryStats)
 
-```{r tab.id="SummaryStats", tab.cap="Mean and standard deviation of our data"}
-df.nirs %>%
-  distinct(Subject, .keep_all = TRUE) %>%
-  group_by(group, gender) %>%
-  get_summary_stats(age, type = "mean_sd") %>%
-  select(-c("variable")) %>%
+
+
+```{r part1b, echo=TRUE}
+# Summary Statistics 
+tbl.desc <- Rmisc::summarySE(data = df %>%
+                               gather("Variable", "Value"),
+                             measurevar = "Value",
+                             groupvars = c("Variable"),
+                             conf.interval = 0.95,
+                             na.rm = TRUE,
+                             .drop = TRUE) %>%
+  janitor::clean_names("upper_camel") %>%
   dplyr::rename(
-    "Group" = "group",
-    "Sex" = "gender",
-    "Mean Age" = "mean",
-    "SD" = "sd"
+    "Mean" = "Value",
+    "CI" = "Ci",
+    "SE" = "Se",
+    "SD" = "Sd"
   )
 ```
 
-Let's run our series of test without removing the finger-tapping or Back1 task
 
-```{r tab.id="oneway-alltask", tab.cap="Simple One-way to confirm removal of finger-tapping and Back-1 Task", echo=TRUE, eval=TRUE, message = FALSE, warning=FALSE}
-tbl.allTask <- df.nirs %>%
-  group_by(metric, Task, Connection) %>%
-  rstatix::anova_test(value~group) %>%
-  filter(p <= 0.1) %>% # let's filter out test that were not at least 0.1
-  arrange(Task, metric, Connection, p) # and sort the table in ascending order
-```
+Summary statistics are shown in Table \@ref(tab:tbl-desc). 
 
-As highlighted in Table \@ref(tab:oneway-alltask) Tap only had one test which came in below p of 0.1 and it failed to reach 0.05. As for Back1, two significant test are shown for Coherence and Absolute Mean Phase. The group difference in Coherence approached significance with p=0.055. This group difference in coherence shows up again in the 2-Back but this time reaches significance; which we would expect given the higher level of complexity of the 2-Back vs 1-Back. 
-
-Hence the only argument to keep the 1-Back is for single result showing group differences in Absolute Mean Phase (summary shown below in Table \@ref(tab:oneway-alltaskFiltered))
-
-```{r tab.id="oneway-alltaskFiltered", tab.cap="Simple One-way to confirm removal of finger-tapping and Back-1 Task", echo=TRUE, eval=TRUE, message = FALSE, warning=FALSE}
-tbl.allTask %>%
-  filter(Task == "Back1")
+```{r, tab.id="tbl-desc", tab.cap="Descriptive Statistics"}
+tbl.desc
 ```
 
 
+```{r part1c, echo=TRUE}
 
+# What is the correlation between "x" and "y"
+cor(df)
 
+# Run the ANOVA
+tbl.anova <- df %>%
+  anova_test(x ~ y)
 
-
-***Answer:***  YES. Based on these tests and *a priori* hypotheses, I believe there is enough evidence to warrant the removal of both the finger-tapping and 1-Back. Our main results are in the Rest and 2-Back condition which is what I would expect.
-
-# One-way test for fNIRS Metrics
-
-Now that we can confirm the removal of finger-tap and 1-Back let's re-run our analysis as Keith requested. These are shown in Table \@ref(tab:oneway-2task)
-
-```{r tab.id="oneway-2task", tab.cap="One-way (Rest & 2-Back)", echo=TRUE, eval=TRUE, message = FALSE, warning=FALSE}
-
-tbl.2Task <- df.nirs %>%
-  filter(Task == "Rest" | Task == "Back2") %>%
-  group_by(metric, Task, Connection) %>%
-  rstatix::anova_test(value~group) %>%
-  filter(p <= 0.1) %>% # let's filter out test that were not at least 0.1
-  arrange(Task, metric, Connection, p) # and sort the table in ascending order
-
+# Run an ANOVA (another way)
+model <- aov(y ~ x, data=df) 
+summary(model)
 ```
 
-Before we get too excited, let's visualize these "significant" test since we have not tested any assumptions.
+The ANOVA results are shown in Table \@ref(tab:tbl-anova). 
 
-```{r echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE}
- plot1 <- ggstatsplot::grouped_ggbetweenstats(
-    data =  df.nirs %>%
-      filter(metric == "AbsPhaseMean" & Task == "Rest"),
-    x = group,
-    y = value,
-    grouping.var = Connection,
-    pairwise.comparisons = TRUE, # display significant pairwise comparisons
-    #outlier.tagging = TRUE,
-    # outlier.label = education,
-    # ggtheme = hrbrthemes::theme_ipsum_tw(),
-    # ggstatsplot.layer = FALSE,
-    xlab = "Group",
-    ylab = "Absolute Mean Phase",
-    title.text = "Absolute Mean Phase (Rest) for Each Connection",
-    messages = FALSE
-  ) + 
-    theme(plot.title = element_text(hjust = 0.5))
-  plot1
+```{r, tab.id="tbl-anova", tab.cap="ANOVA results"}
+tbl.anova
+```
+
+Use the code below if you want to get an interpretation of your data
+
+```{r}
+aov(y ~ x, data=df) %>%
+  report()
 ```
 
 
+# Part 2
 
-```{r echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE}
-plot1 <- ggstatsplot::grouped_ggbetweenstats(
-  data =  df.nirs %>%
-    filter(metric == "AbsPhaseMean" & Task == "Rest" & Connection %in% filter(tbl.2Task, metric == "AbsPhaseMean" & Task == "Rest")$Connection) %>%
-    mutate(Connection = str_replace_all(Connection, "->", "→")),
-  x = group,
-  y = value,
-  grouping.var = Connection,
-  pairwise.comparisons = TRUE, # display significant pairwise comparisons
-  #outlier.tagging = TRUE,
-  # outlier.label = education,
-  # ggtheme = hrbrthemes::theme_ipsum_tw(),
-  # ggstatsplot.layer = FALSE,
-  xlab = "Group",
-  ylab = "Absolute Mean Phase",
-  title.text = "Absolute Mean Phase (Rest) for Each Connection",
-  messages = FALSE
-) + 
-  theme(plot.title = element_text(hjust = 0.5))
-plot1
-```
+As I mentioned in the presentation...there are a TON of packages out there to run your statistics. As you start your journey, I would recommend minimizing the number of packages you use until you get comfortable. Here are a few recommendations.
 
+*	[ggstatsplot](https://indrajeetpatil.github.io/ggstatsplot/)
+*	[easystats](https://easystats.github.io/easystats/) has several packages to give you inspiration
 
-# Methods
+Let's start by loading all the packages we need and the dataset required for the tutorial
 
-\#\# Participant Demographics
-
-Five participants with orthopedic injuries (Age `r describe.mean.sd( filter(tbl.desc, Group == "OI")$Age, dtype = "c" )` years) and four brain-injured participants (Age `r describe.mean.sd(filter(tbl.desc, Group == "BI")$Age, dtype = "c" )` years) were included in this study. Demographics are presented in Table
-
-# Appendix : Data Report
-
-# Data Description
-
-## Data Wrangling - Bad Data Report
-
-We originally had a sample of 17 fNIRS measures, however several participants needed to be removed due to bad MRI data.
-
-## Remaining Good Data
-
-This leaves us with the following data. Table \@ref(tab:tbldatacheck1) and Table \@ref(tab:tbldatacheck2)
-
-```{r tbldatacheck1}
-knitr::kable(tbl_datacheck1, "latex", caption = "Count of Complete Cases", booktabs = TRUE) %>%
-  kable_styling(latex_options = c("HOLD_position", "striped"))
-```
-
-```{r tbldatacheck2}
-knitr::kable(tbl.datacheck2, "latex", caption = "Data Status by Measure", booktabs = TRUE) %>%
-  kable_styling(latex_options = c("HOLD_position", "striped"))
-```
-
-There are a few other data quirks shown below.
-
-## Missing MRI data by location
-
-I also had to remove data from the *Right\_UF*, *Right\_CingC* and *Right\_ILF* because of missing data. This brought the final number of MRI locations down to 15.
-
-## Other Data Quirks
-
--   ACAP-1110 (NIRS-S801) does not have FA in Right\_AF
--   ACAP-1116 (NIRS-S804) does not have FA in Right\_AF
--   ACAP-1193 (NIRS-S821) does not have FA in Right\_AF or Right\_CingC
-
-Removed `Left_CingH` and `Right_CingH` based on Ashley's recommendation.
-
-I removed everyone who had movement during the MRI using the `b900_include` variable.
-
-`Right_AF` has several instances of missing data. It should be interpreted with caution.
-
-## MRI Data
-
-The MRI data was taken at 3 time points.
-
--   Baseline/Post-Injury
--   3 Months
--   6 Months
-
-All participants completed a **Baseline** MRI, they were then randomized into getting a post-injury MRI at either 3-Month and 6-Month.
-
-FA values are provided for the locations shown in Table \@ref(tab:mriLocations).
-
-I created 2 group columns. The first contained 3 groups
-
--   OI
--   SRC
--   mTBI
-
-The second group variable contained only 2 groups
-
--   OI (Orthopedic Controls)
--   BI (Brain-Injured)
-
-*Note*: In this sample *BI* contained participants with SRC and non-SRC injuries.
-
-```{r mriLocations}
-mriLocations %>%
-  knitr::kable(caption = "List of MRI Locations with FA Values", booktabs = TRUE) %>%
-  kableExtra::kable_styling(latex_options = "hold_position")
-```
-
-## fNIRS Data
-
-Five fNIRS metrics were provided. This will be referred to as *fNIRS Metrics*
-
-1.  Mean Coherence (CohMean)
-2.  SD of Coherence (CohSTD)
-3.  Mean Phase (PhaseMean)
-4.  Absolute Mean Phase (AbsPhaseMean)
-5.  SD of Phase
-
-There were 4 tasks during fNIRS recordings. This will be referred to as *Task*
-
-1.  Rest
-2.  Finger Tapping
-3.  1-Back
-4.  2-Back
-
-fNIRS Metrics were calculated using 6 different source-detector variants. This will be referred to as *Connections*
-
-1.  L-DLPFC-\>L-Motor
-2.  L-DLPFC-\>R-Motor
-3.  R-DLPFC-\>L-Motor
-4.  R-DLPFC-\>R-Motor
-5.  L-DLPFC-\>R-DLPFC
-6.  L-Motor-\>R-Motor
-
-# Statistics
-
-## Which Task and/or Connection differentiates Orthopedic Controls and Brain-injured participants best?
-
-After running a linear models, it was apparent that `Task*Connection` interactions were present for each `fNIRS Metric`. I plotted and ran a series of figures and one-ways to evaluate this effect. These showed that the N-Back2 and Rest data were best at differentiating between OI/BI
-
-Table \@ref(tab:tblfNIRSGroup)
-
-```{r tblfNIRSGroup}
-knitr::kable(tbl.fNIRSGroup, "latex", caption = "No Caption", booktabs = TRUE) %>%
-  kable_styling(latex_options = c("HOLD_position", "striped"))
-```
-
-# Exploratory Findings
-
-## Changes from 3M to 6M
-
-I knew from looking at Ashley's data (which had a much larger sample size) that changes in FA were evident between 3 and 6 months. Given our small sample size I was hoping this would not be the case so I could group this data together
-
-### Exploratory Question 1: Are there differences in FA/MD based on when the MRI was taken?
-
-Otherwise stated is there a difference in FA between baseline, 3-month and 6-month measures in our dataset?
-
-The issue with addressing this question is that depending on the location, we have only 1 FA value (e.g. Right\_UF @ 6 Months) hence making conclusions is a tad troublesome.
-
-### Answer to Exploratory Question 1
-
-Yes, depending on the location where FA values were extracted. This is true statistically, but because of the singular data point at certain assessment times, I would not make large conclusions. I was hoping this evaluation would let me combine both 3-month and 6-month scans into one "post-baseline" time point for FA values. Please see Figure \@ref(fig:faOverTime).
-
-<!-- The figure below gives a general review of the changes seen. The effects over time are not significantly different from one scan to the next. -->
-
-```{r faOverTime, fig.cap="Changes in FA over Time by Location", out.height="100%",  out.width="100%"}
-knitr::include_graphics("images/Changes_FA_OverTime.png")
-```
-
-## Outlier Caution
-
-Our small sample size meant that outliers could easily render some examinations statistically significant. As you can see in Figure \@ref(fig:ltr) below, if the outlier (bottom left yellow data point) is removed, the test is no longer significant.
-
-```{r ltr, fig.cap="Left Thalamic Radiations and Mean Coherence", out.height="100%",  out.width="100%"}
-knitr::include_graphics("images/LeftTR_MeanCoh.png")
-```
-
-Because of this, I ran several plots to accompany my statistical tests.
-
-# Model Building
-
-## Choosing between DTI Values
-
-I ran a simple series of one-way analysis and found that using the change in DTI from baseline to post-acute was our strongest indicator. The number of days from the date of injury to the post-acute MRI was also a strong predictor.
-
-## Other Factors
-
-I ran simple one-way analysis to evaluate the data. Both *Gender* and *Age* effects were prominent in our dataset. We did not have the power to evaluate them. That left me with 2 options. Within only the MRI data there were *Age*, *location* and *Gender* interactions Within the for a given fNIRS value, there were *Connection* interactions.
-
-1.  Control for it using a mixed-model
-2.  Ignore them and add it as a limitation in our Discussion
-
-I chose to control for it, but I am open to any other opinions on my methods. Based on the dataset and the exploratory statistics above here are some conclusions
-
-1.  We do not have the power to examine differences at both 3-Month and 6-Months post-injury a. We might consider using the days post-injury the MRI was completed to somewhat control for this
-2.  From simply the plots, there is an indication that SRC and mTBI differ in terms of FA over time
-3.  P-values should be evaluated alongside visual plots to evaluate the contribution of outliers
-
-The general model formula is shown in \@ref(eq:glm)
-
-\\begin{equation\*} FA\_{post-injury} = fNIRS + Group + fNIRS\*Group + (1 \| FA\_{baseline}) \\end{equation\*}
-
-*Note 1:* Although there were some individual differences in FA and fNIRS metrics, I did not control for them in my mixed model given the small sample size. *Note 2:* In a future (final) model I could look into controlling for `mri_dayspost_3m` and `mri_dayspost_6m` which is the number of days post-injury from MRI date. This may allow me to rationalize collapsing the 3-Month and 6-Month data into one **post-injury FA** variable
-
-Fixed effects: fNIRS metrics, group and the interaction term between fNIRS measures and Group. Random effects: Baseline FA
-
-# Jeff's Answers from October 15th
-
-Things to show
-
-1.  Is there a hemisphere effect in our data?
-2.  Adding tables for Part 1.
-3.  Do our findings align with the larger ACAP dataset?
-
-## 1. Hemisphere effect?
-
-```{r eval=TRUE, echo=FALSE}
+```{r load, echo=TRUE}
 # Load/Install required packages ---------------------
-if (!require("pacman")) install.packages("pacman")
-pacman::p_load(devtools, tidystats, rstatix, ggstatsplot, ggplot2, see, ggraph, readxl, openxlsx, hablar, ggplot2, expss, gmodels, Rmisc, tidyverse, car, easystats, apastats,lmerTest, sjlabelled, foreign, labelled, lme4)
+if (!require("pacman")) install.packages("pacman") # if pacman is not installed, the install it.
+pacman::p_load(tidyverse, report, googlesheets4, effectsize, see, janitor, remotes, rstatix, ggpubr, ggstatsplot, jtools, sjPlot, sjmisc, parameters) # load/install required packages
 
+# Load your data ----------
+df <- read_sheet("https://docs.google.com/spreadsheets/d/1fFVmBFpdAKxzLMT8dx7pZm48mo9CE3kIwYhrkaZj7NM", sheet = "anova_data") %>%  # requires 'googlesheets4' library
+  filter(ID != 1)
 
-# ▬ Load the new dataset with z-scores ------------
-load(file = "data/cleanDFz.RData") # Start by loading the .RData File 
-mriLocations <- read_excel("data/mriLocations.xlsx", sheet = "Sheet1") # import your dataset
-mriLocs <- mriLocations$Code
+df$Group <- factor(df$Group, levels=c("Control", "OI", "TBI"), ordered=TRUE) # Data is imported type "character" we need to change that to factors before running statistics.
+levels(df$Group) # Confirm that our data is ordered properly.
+df$ID <- as.factor(df$ID)
+```
 
-  # ▐ ▬  Split into Left/Right ----------
-  df.hemi <- df %>% mutate(
-    hemisphere = case_when( 
-      str_detect(mriloc, "Right_") == 1 ~ 'Right',
-      str_detect(mriloc, "Left_") == 1 ~ 'Left',
-      str_detect(mriloc, "CC_") == 1 ~ 'CC')) %>% # Is the NIRS S-D intrahemispheric?
-    add_column(mriloc2 =stringr::str_remove(string = df$mriloc, pattern = "^.*_"), .after = "hemisphere")
+Now that you have loaded your data we can proceed to the first step. Getting summary statistics and plotting our data. These are shown in Table \@ref(tab:summary-stats).
 
+```{r tab.id="summary-stats", tab.cap="Mean and standard deviation of our data", include=TRUE, cache=FALSE, echo=TRUE}
+df %>%
+  group_by(Group) %>%
+  get_summary_stats(Score, type = "mean_sd")
 
 ```
 
-# Extra Stuff
+Now we are going to get a quick boxplot shown . What is your first interpretation of the data using this boxplot alone?
 
-# Appendix 2
+```{r fig.id="boxplot1", fig.caption="Initial boxplot of your data", include=TRUE, cache=FALSE, echo=TRUE}
 
-## CISG Abstract
+ggboxplot(df, x = "Group", y = "Score")
 
-*Abstract* <!-- wordcountaddin:::text_stats_fn_(text) --> *Objective*: Despite promise, limited research has evaluated changes in cerebral hemodynamics in relation to white-matter integrity following sports-related concussion (SRC). The objective of the current study was to provide an introductory narrative on relationships between functional near-infrared spectroscopy (fNIRS) and fractional anisotropy (FA) following pediatric SRC.
+```
 
-<br> <br>
+\pagebreak
 
-*Design:* Case control
+## Assumptions
 
-<br> <br>
+Now we can start checking assumptions. There are four general assumptions when running an ANOVA. These extend to most parametric statistics.
 
-*Participants and Methods*: Children with sports-related concussion (SRC) (n=4, `r with(subset(demo, a_group == "SRC"), describe.mean.sd(ageinjury,a_group, dtype = 'c', digits =2))` years), and orthopedic injury (n=5,`r with(subset(demo, a_group == "OI"), describe.mean.sd(ageinjury,a_group, dtype = 'c', digits =2))` years) were recruited during emergency department visits at Alberta Children's Hospital. Children completed a 3T MRI scan within 4 weeks (`r with(demo, describe.mean.sd(mri_dayspost_pa, dtype = 'c', digits =2))` days post-injury). Fractional anisotropy (FA) was derived from diffusion MRI using Automatic Fiber Quantification software. Children also completed functional near-infrared spectroscopy measures at rest 1 month (M=*xx*, SD= *xx*) post-injury. fNIRS measures optodes were placed surrounding the dorsolateral prefrontal cortices (DLPFC). A general linear model was performed to evaluate changes in coherence as a function of clinical group and FA.
+The ANOVA test makes the following assumptions about the data:
 
-<br> <br>
+1.  ***No significant outliers*** in any cell of the design
+2.  ***Normality.*** the data for each design cell should be approximately normally distributed.
+3.  ***Homogeneity of variances.*** The variance of the outcome variable should be equal in every cell of the design.
+4.  ***Independence of the observations.*** Each subject should belong to only one group. There is no relationship between the observations in each group. Having repeated measures for the same participants is not allowed.
 
-*Results*: There were significant interactions between groups and FA metrics in both left (t=4.51, p\<.01) and right (t=2.88, p=.035) thalamic radiations on coherence in the DLPFC. Children with SRC had significantly lower coherence, which was associated with
+### Assumption \#1: Outliers
 
-<!-- Changes in fNIRS coherence 1 month post-injury between left and right motor DLPFC were noted alongside decreases in FA post-injury.  -->
+```{r ass1, include=TRUE, cache=FALSE, echo=TRUE}
+df %>%
+  group_by(Group) %>%
+  identify_outliers(Score)
+```
 
-Demographics did not differ between groups. After FDR correction, age was significantly positively associated with right inferior longitudinal fasciculus FA. Sex was significantly associated with bilateral cingulum bundle and left arcuate fasciculus FA (male\>female). The group by age interaction was significant for bilateral thalamic radiation FA; follow-up revealed significantly lower FA in the SRC group than the OI group in younger (\<11 years) but not older (\>14 years) children.
+Values above Q3 + 1.5xIQR or below Q1 -1.5xIQR are considered as outliers.
 
-<br> <br>
+Values above Q3 + 3xIQR or below Q1 -3xIQR are considered as extreme points (or extreme outliers).
 
-*Conclusions*: Cerebral hemodynamic coherence changes showed distinct associations with FA values, known to describe myelination of interhemispheric structures, post-injury. Future research using larger samples could elucidate sex and age specific effects.
+However, one method is to create boxplots where you add points to your data. This allows you to get a better idea of the spread. Personally, I am a fan of **`geom_boxplot`**. I will show you below how this is done.
 
-## Andrew's Links
 
-**Mixed Models** <https://web.stanford.edu/class/psych252/section_2013/Mixed_models_tutorial.html>
+```{r, eval=TRUE, echo=FALSE, fig.cap="What could be occurring"}
+#knitr::include_graphics("https://i.imgur.com/WJRGIBR.jpg")
+knitr::include_graphics("images/summary-stats-hiding.jpg") # fig.asp = 1454/2362
+```
 
-<https://web.stanford.edu/class/psych252/section/Mixed_models_tutorial.html>
 
-<https://m-clark.github.io/docs/mixedModels/anovamixed.html>
 
-# References
+```{r ass1b, cache=FALSE, echo=TRUE}
+ggplot(data = df) + 
+  aes(x = Group, y = Score) +
+  geom_boxplot(outlier.size = 0, alpha = 0.3) + 
+  geom_point(aes(color = ID),
+             size = 6,
+             position =position_jitterdodge(jitter.width = 0.1,
+                                            jitter.height = 0,
+                                            dodge.width = 0.75,
+                                            seed = NA)) + 
+  labs(title = "Scores for each Group shown as boxplots (with data points)") +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5)) 
+
+```
+
+### Assumption \#2: Normality
+
+The normality assumption can be checked by using one of the following two approaches:
+
+1.  Analyzing the ANOVA model residuals to check the normality for all groups together. This approach is easier and it's very handy when you have many groups or if there are few data points per group.
+2.  Check normality for each group separately. This approach might be used when you have only a few groups and many data points per group. In this section, we'll show you how to proceed for both option 1 and 2.
+
+***Check normality assumption by analyzing the model residuals***. QQ plot and Shapiro-Wilk test of normality are used. QQ plot draws the correlation between a given data and the normal distribution.
+
+```{r ass2, include=TRUE, cache=FALSE, echo=TRUE}
+# Build the linear model
+model <- aov(Score ~ Group, data=df)
+# Create a QQ plot of residuals
+ggqqplot(residuals(model))
+
+# Compute Shapiro-Wilk test of normality
+shapiro_test(residuals(model))
+
+```
+
+In the QQ plot, as all the points fall approximately along the reference line, we can assume normality. This conclusion is supported by the Shapiro-Wilk test. The p-value is not significant, so we can assume normality.
+
+Check normality assumption by groups. Computing Shapiro-Wilk test for each group level. If the data is normally distributed, the p-value should be greater than 0.05.
+
+```{r ass2b, include=TRUE, cache=FALSE, echo=TRUE}
+df %>%
+  group_by(Group) %>%
+  shapiro_test(Score)
+```
+
+The score were normally distributed (p \> 0.05) for each group, as assessed by Shapiro-Wilk's test of normality.
+
+Note that, if your sample size is greater than 50, the normal QQ plot is preferred because at larger sample sizes the Shapiro-Wilk test becomes very sensitive even to a minor deviation from normality.
+
+QQ plot draws the correlation between a given data and the normal distribution. Create QQ plots for each group level:
+
+```{r ass2c, include=TRUE, cache=FALSE, echo=TRUE}
+ggqqplot(df, "Score", facet.by = "Group")
+```
+
+### Assumption \#3: Homogeneity of Variance
+
+The assumption of homogeneity of variance is an assumption of the ANOVA stating that all comparison groups have the same variance.
+
+Using Levene's test we can get a good idea if we have violated this. An alternative would be Bartlett's test (which we won't cover).
+
+```{r ass3a, include=TRUE, cache=FALSE, echo=TRUE}
+
+df %>% 
+  levene_test(Score ~ Group)
+
+```
+
+From the output above, we can see that the p-value is \> 0.05, which is not significant. This means that, there is not a significant difference between variances across groups. Therefore, we can assume we have met the assumption of homogeneity of variances.
+
+In a situation where the homogeneity of variance assumption is not met, you can compute the Welch one-way ANOVA test using the function `welch_anova_test()`. This test does not require the assumption of equal variances.
+
+## Computing your model
+
+Finally we can compute our model this will be the same as we did in our first workshop.
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+model <- aov(Score ~ Group, data=df)
+model # print it in the console
+
+model2 <- df %>% 
+  anova_test(Score ~ Group)
+model2 # print it in the console
+```
+
+### Understanding your model
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+effect_plot(model, pred = Group, interval = TRUE, plot.points = TRUE)
+```
+
+<!---BLOCK_LANDSCAPE_START--->
+```{r, include=TRUE, cache=FALSE, echo=TRUE, fig.width=8, fig.asp=8.5/11}
+performance::check_model(model) # will make some plots to check your model 
+```
+<!---BLOCK_LANDSCAPE_STOP--->
+
+
+### Post-hoc tests
+
+A significant one-way ANOVA is generally followed up by Tukey post-hoc tests to perform multiple pairwise comparisons between groups. Key R function: `tukey_hsd()`
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+pwc <- df %>% 
+  tukey_hsd(Score ~ Group)
+pwc
+```
+
+It can be seen from the output, that the TBI group differs from both the OI and Control groups (adjusted p-value = 0.004 and 0.005).
+
+### Reporting your model
+
+Using the `report` package
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+report(model)
+
+#report_model(model)
+#report_performance(model)
+#report_statistics(model)
+```
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+# Visualization: box plots with p-values
+pwc <- pwc %>% add_xy_position(x = "Group")
+ggboxplot(df, x = "Group", y = "Score") +
+  stat_pvalue_manual(pwc, hide.ns = TRUE) +
+  labs(
+    subtitle = get_test_label(model2, detailed = TRUE),
+    caption = get_pwc_label(pwc)
+  )
+```
+
+A one-way ANOVA was performed to evaluate if the test scores was different for the 3 different treatment groups: Control (n = 10), OI (n = 10) and TBI (n = 10).
+
+Values on test scores were statistically significantly different between different treatment groups, (F(2, 27) = 8.15, p = 0.002), partial omega squared = 0.32.
+
+Post hoc comparisons using the Tukey HSD test indicated that the mean score in the TBI group (`r with(filter(df, Group == "TBI"), describe.mean.sd(Score, dtype="c"))`) was significantly lower than both the Control (`r with(filter(df, Group == "Control"), describe.mean.sd(Score, dtype="c"))`) and OI group (`r with(filter(df, Group == "OI"), describe.mean.sd(Score, dtype="c"))`). However, there was no significant difference between the OI and Control group.
+
+# What's Next?
+
+We redo what we just did but we start looking at interactions. If you feel uncomfortable with what we have done this week...things are about to get a whole lot worse for you. Review this as much as you can.
+
+
+# Other Packages to look at?
+
+[`effectsize`](https://easystats.github.io/see/articles/effectsize.html) package is part of the `easystats` group and provides some nice figures.
+
+# Exercises
+
+1. Change the dataset we used in this Module and run your own ANOVA!
+2. Confirm the output makes sense.
