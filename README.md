@@ -21,10 +21,11 @@ Links to the workshop's recordings will be posted here as they become available.
 3. [Installation](https://youtu.be/Ol-p-vkaMBo)
 	* [Already have R Installed?](https://youtu.be/aE9_lGXlJ5U)
 4. [Essentials of RMarkdown](https://youtu.be/g0VYp7QnlVQ)
-5. Introductory Statistics #1
-6. Introductory Statistics #2
-7. Data Wrangling
-8. Plotting using the Grammar of Graphics (ggplot)
+5. Introductory Statistics #1 **COMING SOON**
+	* [Example Modifying for your data](https://www.youtube.com/watch?v=FGI-dmes3cw) 	
+7. Introductory Statistics #2
+8. Data Wrangling
+9. Plotting using the Grammar of Graphics (ggplot)
 
 
 # Installation Links
