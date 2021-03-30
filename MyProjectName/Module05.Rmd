@@ -47,7 +47,7 @@ use_betterbiblatex = TRUE
 ```{r part1a, echo=TRUE}
 # Load/Install required packages ---------------------
 if (!require("pacman")) install.packages("pacman") # if pacman is not installed, the install it.
-pacman::p_load(effectsize, ggpubr, ggstatsplot, googlesheets4, janitor, jtools, knitr, parameters, remotes, report, rstatix, tidyverse,  see, sjPlot, sjmisc) # load/install required packages
+pacman::p_load(effectsize, ggpubr, ggstatsplot, googlesheets4, janitor, jtools, knitr, parameters, rio, remotes, report, rstatix, tidyverse,  see, sjPlot, sjmisc) # load/install required packages
 
 # Load your data ----------
 df <- read_sheet("https://docs.google.com/spreadsheets/d/1fFVmBFpdAKxzLMT8dx7pZm48mo9CE3kIwYhrkaZj7NM", sheet = "1") 
@@ -118,7 +118,7 @@ As I mentioned in the presentation...there are a TON of packages out there to ru
 *	[ggstatsplot](https://indrajeetpatil.github.io/ggstatsplot/)
 *	[easystats](https://easystats.github.io/easystats/) has several packages to give you inspiration
 
-Let's start by loading all the packages we need and the dataset required for the tutorial. In this example I am using a Google Sheet and the `read_sheet` function. However, for any other data type I would **strongly** recommend using the [`rio`](https://cran.r-project.org/web/packages/rio/vignettes/rio.html) package. Which uses "import". I showcase an example below in case you wish to try this with your own data at a later time.
+Let's start by loading all the packages we need and the dataset required for the tutorial. In this example I am using a Google Sheet and the `read_sheet` function. However, for any other data type I would **strongly** recommend using the [`rio` package](https://cran.r-project.org/web/packages/rio/vignettes/rio.html). Which uses "import". I showcase an example below in case you wish to try this with your own data at a later time.
 
 
 ```{r, eval=FALSE, echo=TRUE}
