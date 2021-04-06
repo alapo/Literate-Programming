@@ -49,7 +49,7 @@ Let's re-run our statistics as we did in the previous module
 ```{r part1a, echo=FALSE}
 # Load/Install required packages ---------------------
 if (!require("pacman")) install.packages("pacman") # if pacman is not installed, the install it.
-pacman::p_load(effectsize, ggeffects, ggpubr, ggstatsplot, googlesheets4, janitor, jtools, knitr, parameters, rio, remotes, report, rstatix, tidyverse,  see, sjPlot, sjmisc) # load/install required packages
+pacman::p_load(effectsize, ggeffects, ggpubr, ggstatsplot, googlesheets4, janitor, jtools, knitr, interactions, parameters, rio, remotes, report, rstatix, tidyverse,  see, sjPlot, sjmisc) # load/install required packages
 ```
 
 As I mentioned in the presentation...there are a TON of packages out there to run your statistics. As you start your journey, I would recommend minimizing the number of packages you use until you get comfortable. Here are a few recommendations.
