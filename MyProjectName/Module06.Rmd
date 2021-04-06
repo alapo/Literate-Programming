@@ -1,0 +1,366 @@
+---
+date: "`r Sys.Date()`"
+author: "Dr. Andrew Lapointe"
+title: "Module 06"
+output: 
+  officedown::rdocx_document:
+    reference_docx: styles/template.docx          # This is the template that will style my document when its knit
+link-citations: yes
+linkcolor: red
+citecolor: blue
+#bibliography: G:/My Drive/ZoteroRPlugin/My Library.bib  # you will need to export your own bibliography
+zotero: TRUE
+#csl: styles/Citation Styles/spectroscopy-letters.csl    # This sets the style of formatting for references
+---
+
+```{r setup, include=FALSE, cache=FALSE, echo=FALSE}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(apastats,tidyverse, officedown, officer) # Load required packages
+
+knitr::opts_chunk$set(fig.cap = TRUE,
+                      fig.path = 'images/',
+                      echo = FALSE,
+                      warning = FALSE, 
+                      message = FALSE,
+                      include = TRUE,
+                      dpi = 300,
+                      crop = TRUE # This will remove the whitespace surrounding an image see here: https://bookdown.org/yihui/rmarkdown-cookbook/crop-plot.html
+                      # The following chunks only work with PDF outputs
+                      #fig.pos = 'H', # only works with PDFs
+                      #fig.align = 'center', # only works with PDFs
+                      #out.height="100%",  out.width="100%") # only works with PDFs
+)
+
+# Start loading data into the environment
+use_betterbiblatex = TRUE
+
+```
+
+# Table of content
+
+<!---BLOCK_TOC--->
+
+\pagebreak
+
+
+# Part 1: Business as usual
+
+Let's re-run our statistics as we did in the previous module
+```{r part1a, echo=FALSE}
+# Load/Install required packages ---------------------
+if (!require("pacman")) install.packages("pacman") # if pacman is not installed, the install it.
+pacman::p_load(effectsize, ggeffects, ggpubr, ggstatsplot, googlesheets4, janitor, jtools, knitr, parameters, rio, remotes, report, rstatix, tidyverse,  see, sjPlot, sjmisc) # load/install required packages
+```
+
+As I mentioned in the presentation...there are a TON of packages out there to run your statistics. As you start your journey, I would recommend minimizing the number of packages you use until you get comfortable. Here are a few recommendations.
+
+-   [ggstatsplot](https://indrajeetpatil.github.io/ggstatsplot/)
+-   [easystats](https://easystats.github.io/easystats/) has several packages to give you inspiration
+
+Let's start by loading all the packages we need and the dataset required for the tutorial. In this example I am using a Google Sheet and the `read_sheet` function. However, for any other data type I would **strongly** recommend using the [`rio` package](https://cran.r-project.org/web/packages/rio/vignettes/rio.html). Which uses "import". I showcase an example below in case you wish to try this with your own data at a later time.
+
+```{r load, echo=FALSE}
+# Load/Install required packages ---------------------
+# Completed in part 1
+
+# Load your data ----------
+df <- rio::import("raw/ChAMP_Oncology.sav") %>%
+  select(-c("DateofAssessment", "IQScale", "SecondaryDiagnosis", "typeofradiation", "treatmentprotocol", "PatientGroupBTvsALL", "RadiationTOTALDose")) %>%
+  rename(
+    "Group" = "PrimaryDiagnosis_A",
+    "IQ" = "FullScaleIQ",
+    "Age" = "ChildsageatAssessment",
+    "ID" = "UniqueID",
+    "Radiation" = "RADIATIONNUMERIC",
+    "Score" = "ProcessingSpeed"
+  ) %>%
+  mutate(Group = str_replace_all(Group, "Onc-CNS Tumor", "Brain Cancer") %>%
+         str_replace_all("Onc-Leukemia", "Leukemia"))
+
+df$Group <- factor(df$Group, levels=c("Brain Cancer", "Leukemia"), ordered=TRUE) # Data is imported type "character" we need to change that to factors before running statistics.
+#levels(df$Group) # Confirm that our data is ordered properly.
+df$ID <- as.factor(df$ID)
+
+df$Sex <- factor(df$Sex, levels=c("Female", "Male"), ordered=TRUE) # Data is imported type "character" we need to change that to factors before running statistics.
+```
+
+Now that you have loaded your data we can proceed to the first step. Getting summary statistics and plotting our data. These are shown in Table \@ref(tab:summary-stats).
+
+```{r tab.id="summary-stats", tab.cap="Mean and standard deviation of our data", include=TRUE, cache=FALSE, echo=TRUE}
+df %>%
+  group_by(Group) %>%
+  get_summary_stats(Score, type = "mean_sd")
+
+```
+
+Now we are going to get a quick boxplot shown . What is your first interpretation of the data using this boxplot alone?
+
+```{r fig.id="boxplot1", fig.caption="Initial boxplot of your data", include=TRUE, cache=FALSE, echo=TRUE}
+
+ggboxplot(df, x = "Group", y = "Score")
+
+```
+
+\pagebreak
+
+## Assumptions
+
+Now we can start checking assumptions. There are four general assumptions when running an ANOVA. These extend to most parametric statistics.
+
+The ANOVA test makes the following assumptions about the data:
+
+1.  ***No significant outliers*** in any cell of the design
+2.  ***Normality.*** the data for each design cell should be approximately normally distributed.
+3.  ***Homogeneity of variances.*** The variance of the outcome variable should be equal in every cell of the design.
+4.  ***Independence of the observations.*** Each subject should belong to only one group. There is no relationship between the observations in each group. Having repeated measures for the same participants is not allowed.
+
+### Assumption \#1: Outliers
+
+```{r ass1, include=TRUE, cache=FALSE, echo=TRUE}
+df %>%
+  group_by(Group) %>%
+  identify_outliers(Score)
+```
+
+Values above Q3 + 1.5xIQR or below Q1 -1.5xIQR are considered as outliers.
+
+Values above Q3 + 3xIQR or below Q1 -3xIQR are considered as extreme points (or extreme outliers).
+
+However, one method is to create boxplots where you add points to your data. This allows you to get a better idea of the spread. Personally, I am a fan of **`geom_boxplot`**. I will show you below how this is done.
+
+```{r, eval=TRUE, echo=FALSE, fig.cap="What could be occurring"}
+#knitr::include_graphics("https://i.imgur.com/WJRGIBR.jpg")
+knitr::include_graphics("images/summary-stats-hiding.jpg") # fig.asp = 1454/2362
+```
+
+```{r ass1b, cache=FALSE, echo=TRUE}
+ggplot(data = df) + 
+  aes(x = Group, y = Score) +
+  geom_boxplot(outlier.size = 0, alpha = 0.3) + 
+  geom_point(aes(color = ID),
+             size = 6,
+             position =position_jitterdodge(jitter.width = 0.1,
+                                            jitter.height = 0,
+                                            dodge.width = 0.75,
+                                            seed = NA)) + 
+  labs(title = "Scores for each Group shown as boxplots (with data points)") +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5)) 
+
+```
+
+### Assumption \#2: Normality
+
+The normality assumption can be checked by using one of the following two approaches:
+
+1.  Analyzing the ANOVA model residuals to check the normality for all groups together. This approach is easier and it's very handy when you have many groups or if there are few data points per group.
+2.  Check normality for each group separately. This approach might be used when you have only a few groups and many data points per group. In this section, we'll show you how to proceed for both option 1 and 2.
+
+***Check normality assumption by analyzing the model residuals***. QQ plot and Shapiro-Wilk test of normality are used. QQ plot draws the correlation between a given data and the normal distribution.
+
+```{r ass2, include=TRUE, cache=FALSE, echo=TRUE}
+# Build the linear model
+model <- aov(Score ~ Group, data=df)
+# Create a QQ plot of residuals
+ggqqplot(residuals(model))
+
+# Compute Shapiro-Wilk test of normality
+shapiro_test(residuals(model))
+
+```
+
+In the QQ plot, as all the points fall approximately along the reference line, we can assume normality. This conclusion is supported by the Shapiro-Wilk test. The p-value is not significant, so we can assume normality.
+
+Check normality assumption by groups. Computing Shapiro-Wilk test for each group level. If the data is normally distributed, the p-value should be greater than 0.05.
+
+```{r ass2b, include=TRUE, cache=FALSE, echo=TRUE}
+df %>%
+  group_by(Group) %>%
+  shapiro_test(Score)
+```
+
+The score were normally distributed (p \> 0.05) for each group, as assessed by Shapiro-Wilk's test of normality.
+
+Note that, if your sample size is greater than 50, the normal QQ plot is preferred because at larger sample sizes the Shapiro-Wilk test becomes very sensitive even to a minor deviation from normality.
+
+QQ plot draws the correlation between a given data and the normal distribution. Create QQ plots for each group level:
+
+```{r ass2c, include=TRUE, cache=FALSE, echo=TRUE}
+ggqqplot(df, "Score", facet.by = "Group")
+```
+
+### Assumption \#3: Homogeneity of Variance
+
+The assumption of homogeneity of variance is an assumption of the ANOVA stating that all comparison groups have the same variance.
+
+Using Levene's test we can get a good idea if we have violated this. An alternative would be Bartlett's test (which we won't cover).
+
+```{r ass3a, include=TRUE, cache=FALSE, echo=TRUE}
+
+df %>% 
+  levene_test(Score ~ Group)
+
+```
+
+From the output above, we can see that the p-value is \> 0.05, which is not significant. This means that, there is not a significant difference between variances across groups. Therefore, we can assume we have met the assumption of homogeneity of variances.
+
+In a situation where the homogeneity of variance assumption is not met, you can compute the Welch one-way ANOVA test using the function `welch_anova_test()`. This test does not require the assumption of equal variances.
+
+## Computing your model
+
+Finally we can compute our model this will be the same as we did in our first workshop.
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+model <- aov(lm(Score ~ Group, data=df))
+model # print it in the console
+
+model2 <- df %>% 
+  anova_test(Score ~ Group)
+model2 # print it in the console
+
+```
+
+### Understanding your model
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+effect_plot(model, pred = Group, interval = TRUE, plot.points = TRUE)
+```
+
+<!---BLOCK_LANDSCAPE_START--->
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE, fig.width=8, fig.asp=8.5/11}
+performance::check_model(model) # will make some plots to check your model 
+```
+
+<!---BLOCK_LANDSCAPE_STOP--->
+
+### Post-hoc tests
+
+A significant one-way ANOVA is generally followed up by Tukey post-hoc tests to perform multiple pairwise comparisons between groups. Key R function: `tukey_hsd()`
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+pwc <- df %>% 
+  tukey_hsd(Score ~ Group)
+pwc
+```
+
+It can be seen from the output, that the **Brain Cancer** group differs from the **Leukemia** group.
+
+### Reporting your model
+
+Using the `report` package
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+report(model)
+
+#report_model(model)
+#report_performance(model)
+#report_statistics(model)
+```
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+# Visualization: box plots with p-values
+pwc <- pwc %>% add_xy_position(x = "Group")
+ggboxplot(df, x = "Group", y = "Score") +
+  stat_pvalue_manual(pwc, hide.ns = TRUE) +
+  labs(
+    subtitle = get_test_label(model2, detailed = TRUE),
+    caption = get_pwc_label(pwc)
+  )
+```
+
+
+
+A one-way ANOVA was performed to evaluate if the test scores was different for the 2 different treatment groups: Brain cancer (n = `r length(df$Group == "Brain Cancer")`) and Leukemia (n = `r length(df$Group == "Leukemia")`) .
+
+Values on test scores were statistically significantly different between different treatment groups, `r describe.aov(model, "Group", sstype = 2)`.
+
+Post-hoc comparisons using the Tukey HSD test indicated that the mean score in the Brain Cancer group (`r with(filter(df, Group == "Brain Cancer"), describe.mean.sd(Score, dtype="c"))`) was significantly lower than the Leukemia (`r with(filter(df, Group == "Leukemia"), describe.mean.sd(Score, dtype="c"))`).
+
+# Theory
+
+Today we start looking into interactions.  If you want more theory to read up on interactions here are a few resources!
+
+1. [StatisticsByJim](https://statisticsbyjim.com/regression/interaction-effects/)
+2. [Viewing interactions as graphs](https://courses.washington.edu/smartpsy/interactions.htm)
+3. [TheAnalysisFactor](https://www.theanalysisfactor.com/interactions-main-effects-not-significant/)
+4. [UCLA](https://stats.idre.ucla.edu/r/seminars/interactions-r/)
+
+
+# Part 2: Issues
+
+We got a very simply group effect based on our analysis but upon closer investigation there's something else going on with this dataset.
+
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+df %>%
+  group_by(Group, Sex) %>%
+  get_summary_stats(Score, type = "mean_sd")
+
+ggboxplot(df, x = "Group", y = "Score", color="Sex")
+
+
+# Running some model ---
+summary(aov(Score ~ Group, data=df))
+summary(aov(Score ~ Group*Sex, data=df))
+
+model3 <- lm(Score ~ Group*Sex, data=df)
+summary(aov(model3)) # this will give the same results
+```
+
+## Visualizing interactions
+
+There are a few packages I like to use to visualize interactions. In no particular order they are:
+
+* [jtools](https://cran.r-project.org/web/packages/jtools/vignettes/summ.html)
+* [interactions](https://github.com/jacob-long/interactions)
+* [sjPlot](https://strengejacke.github.io/sjPlot/)
+* [ggeffects](https://strengejacke.github.io/ggeffects/index.html)
+* [modelbased](https://github.com/easystats/modelbased) (vignette [here](https://easystats.github.io/modelbased/articles/visualisation_matrix.html))
+* [ggstatsplot](https://indrajeetpatil.github.io/ggstatsplot/#:~:text=ggstatsplot%20is%20an%20extension%20of,the%20information%2Drich%20plots%20themselves.)
+
+I am going to be using the `interactions` package here but later in the document I show a few other examples. There are 2 main functions 
+
+1. `cat_plot` for categorical predictors
+2. `interact_plot` when you have continuous predictors
+
+### Using interactions package
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+#jtools::summ(model3) # shows the summary output.
+interactions::cat_plot(model3, pred = Group, modx = Sex, plot.points = TRUE) + # Lets visualize the interaction
+  theme(legend.position = "top") # Not required but move the legend to the top of the figure
+```
+
+
+## Continuous predictors
+If you have a continuous predictor we can also view the interaction. In this case I create a model looking to see if ***Age*** has any impact
+
+```{r, include=TRUE, cache=FALSE, echo=TRUE}
+model4 <- lm(Score ~ Group*Age, data=df)
+summary(aov(model4))
+interactions::interact_plot(model4, pred = Age, modx = Group, plot.points = TRUE)
+```
+
+
+# Supplementary Resources
+You can view more example using the interactions package vignette. You can read more about the `easystats` philosopy [here](https://www.researchgate.net/profile/Daniel-Luedecke/publication/331075471_Project_easystats_-_making_statistical_computations_with_R_easier/links/5c64a722a6fdccb608c110e1/Project-easystats-making-statistical-computations-with-R-easier.pdf). Finally, [`effectsize`](https://easystats.github.io/see/articles/effectsize.html) package is part of the `easystats` group and provides some nice figures.
+
+Below I also provide some code for other packages that allow you to visualize your model
+
+```{r, echo=TRUE, eval=FALSE}
+ggeffects::plot(ggpredict(model3, terms = c("Group", "Sex"))) #using ggpredict
+
+sjPlot::plot_model(model3, type="pred", terms= c("Group", "Sex"))
+
+sjPlot::plot_model(model3, type="int") # automatically look at the interaction term
+
+jtools::effect_plot(model3, pred="Group", interval= TRUE)
+
+modelbased::estimate_means(model3)
+```
+
+# Exercises
+
+1.  Change the dataset we used in this Module and run your own ANOVA!
+2.  Confirm the output makes sense.
