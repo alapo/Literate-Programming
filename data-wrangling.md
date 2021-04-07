@@ -1,7 +1,3 @@
-layout: page
-title: "PAGE TITLE"
-permalink: /URL-PATH/
-
 ## Intro	
 Data Wrangling is the process of cleaning and manipulating your data.frame. I have never obtained a dataset that did not need to be cleaned or organized in some fashion (if you have I am quite jealous). The packages I rely on the most are
 
