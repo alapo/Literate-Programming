@@ -1,0 +1,386 @@
+---
+date: "`r Sys.Date()`"
+author: "Dr. Andrew Lapointe"
+title: "Module 07: Data Wrangling"
+output: 
+  officedown::rdocx_document:
+    reference_docx: styles/template.docx          # This is the template that will style my document when its knit
+link-citations: yes
+linkcolor: red
+citecolor: blue
+#bibliography: G:/My Drive/ZoteroRPlugin/My Library.bib  # you will need to export your own bibliography
+zotero: TRUE
+#csl: styles/Citation Styles/spectroscopy-letters.csl    # This sets the style of formatting for references
+---
+
+```{r setup, include=FALSE, cache=FALSE, echo=FALSE}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(apastats,tidyverse, officedown, officer) # Load required packages
+
+knitr::opts_chunk$set(fig.cap = TRUE,
+                      fig.path = 'images/',
+                      echo = TRUE,
+                      eval=FALSE,
+                      warning = FALSE, 
+                      message = FALSE,
+                      include = TRUE,
+                      dpi = 300,
+                      crop = TRUE # This will remove the whitespace surrounding an image see here: https://bookdown.org/yihui/rmarkdown-cookbook/crop-plot.html
+                      # The following chunks only work with PDF outputs
+                      #fig.pos = 'H', # only works with PDFs
+                      #fig.align = 'center', # only works with PDFs
+                      #out.height="100%",  out.width="100%") # only works with PDFs
+)
+
+# Start loading data into the environment
+use_betterbiblatex = TRUE
+
+```
+
+# Table of content
+
+<!---BLOCK_TOC--->
+
+\pagebreak
+
+
+# Part 1: Importing
+
+We are going to start with a nice real-world example. I ran an experiment recently which combined a few modalities. At the end of data collection there were a few raw datasets
+
+1. Demographics dataset (raw/data.xlsx, demographics)
+2. MRI dataset
+
+```{r part1a, echo=FALSE}
+# Load/Install required packages ---------------------
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(rio, ggplot2, esquisse, Rmisc, tidyverse, car, janitor, hablar, rstatix, report, remotes, ggpubr, ggstatsplot, jtools, sjPlot, sjmisc, parameters, easystats, apastats, sjlabelled, googlesheets4, DataExplorer) #p_load This function is a wrapper for library and require. It checks to see if a package is installed, if not it attempts to install the package from CRAN and/or any other repository in the pacman repository list.
+
+# conflicted::conflict_prefer("rename", "dplyr")
+# conflicted::conflict_prefer("filter", "dplyr")
+# conflicted::conflict_prefer("clean_names", "janitor")
+# conflicted::conflict_prefer("mutate", "dplyr")
+# conflicted::conflict_prefer("summarise", "dplyr")
+
+```
+Here we start by importing a demographic dataset containing information on the participants. We also have a second dataset which contains MRI data.
+
+```{r load, echo=FALSE}
+# Load your data ----------
+df.demo <- import("raw/data.xlsx", which = "demographics") %>% # Imports the sheet with demographic data
+  clean_names() %>% # Clean the column names
+  dplyr::rename(
+    "ID" = "study_id",
+    "Group" = "group"
+  )
+
+df.mri <- import("raw/data.xlsx", which = "MRI-data") %>%
+  clean_names() %>%                             # clean column names
+  remove_empty(c("rows", "cols")) %>%           # remove the empty rows and columns
+  remove_constant(na.rm = TRUE, quiet = FALSE)  # remove the column of all "Yes" values 
+```
+
+## Part II: Common Cleaning Tasks
+Let's take a look at `df.mri`. Clearly there are some names that need cleaning so let's start by renaming a column
+
+```{r, echo=TRUE, eval=FALSE}
+      df.mri <- df.mri %>%
+        dplyr::rename(
+          # "NewName" = "OldName"
+           "completed_mri" = "completed_mri_1_yes_0_no"
+        )
+
+```
+
+We can also `filter` results based on wheter or not they completed an MRI.
+
+```{r, echo=TRUE, eval=FALSE}
+  df.mri <- df.mri %>%
+        filter(completed_mri == "1") # did they complete an MRI?
+
+```
+
+We can also filter out any participants that did not complete their testing in Calgary
+
+
+```{r, echo=TRUE, eval=FALSE}
+   df.mri <- df.mri %>%
+            filter(site_mri == "Calgary")       # remove all data that is not from Calgary
+
+```
+
+This seems a tad cumbersome...we can add several filters in one command as shown below
+
+```{r, echo=TRUE, eval=FALSE}
+   df.mri <- df.mri %>%
+        filter(site_mri == "Calgary" & completed_mri == "1") # remove all data that is not from Calgary
+```
+
+This is great! But if we take a closer look at the datasets, there are more cases in `df.mri` than `df.demo`. I only want the data where the subject is present in both datasets.
+   
+   
+```{r, echo=TRUE, eval=FALSE}
+   df.mri <- df.mri %>%
+        filter(id %in% unique(df.demo$ID)) # I only want IDs that are in present in df.demo
+```
+
+ At the moment some cells in our df.mri columns contains text. Which is causing issues when we import. Below we force it to convert to a numeric column this will cause "text" columns to become blank (which we want). Below we use the `hablar` package to fix this error.
+
+```{r, echo=TRUE, eval=FALSE}
+# Converts some of the columns into numeric -- requires hablar library
+    df.mri <- df.mri %>%
+      suppressWarnings(hablar::convert(num(left_af:right_uf))) 
+
+```
+
+Based on the missing data in left-af and right-af we are going to remove these columns from our data.frame
+
+```{r, echo=TRUE, eval=FALSE}
+    df.mri <- df.mri %>%
+      select(-c("left_af", "right_af"))
+```
+
+## Part 3: Converting to long format 
+
+Finally, we need to convert `df.mri` from the wide to long format. 
+
+```{r, echo=TRUE, eval=FALSE}
+    df.mri <- df.mri %>%
+        gather(mriloc, dti_value, left_cst:right_uf)
+```
+
+We are almost done here, but I also want to arrange this dataframe according to `id` to make it easier to visualize. 
+
+```{r, echo=TRUE, eval=FALSE}
+  df.mri <- df.mri %>%
+        dplyr::arrange(id)
+```
+
+Finally, I want to create a new column in my dataset based on values that are already contained. In this case I want a column which specifies if the `mriloc` is in the left or right hemisphere.
+
+```{r, echo=TRUE, eval=FALSE}
+      df.mri <- df.mri %>%
+        mutate(hemisphere = case_when(
+          str_contains(mriloc, "left") == TRUE ~ "Left",
+          str_contains(mriloc, "left") == FALSE ~ "Right"
+        ))
+```
+
+# Part 4: Insert some pixie dust 
+
+Now this is all great and good but its taken us over a few pages of steps. We can actually complete all of these steps in one chunk of code using pipes!!!
+
+```{r, echo=TRUE, eval=TRUE}
+df.mri <- df.mri %>%
+        dplyr::rename(
+          # "NewName" = "OldName"
+          "completed_mri" ="completed_mri_1_yes_0_no"
+        ) %>%
+        filter(site_mri == "Calgary" & completed_mri == "1") %>%         # remove all data that is not from Calgary and those who did not complete an MRI
+        filter(id %in% unique(df.demo$ID)) %>%                           # I only want IDs that are in present in df.demo
+        suppressWarnings(hablar::convert(num(left_af:right_uf))) %>% # Converts some of the columns into numeric -- requires hablar library
+        
+        gather(mriloc, dti_value, left_cst:right_uf) %>%
+        dplyr::arrange(id) %>%
+        mutate(hemisphere = case_when(
+          str_contains(mriloc, "left") == TRUE ~ "Left",
+          str_contains(mriloc, "left") == FALSE ~ "Right"
+        ))
+```
+
+# Part 5: Merging datasets
+
+Alright now we have both datasets loaded and they are in the "long" format. But remember our goal is to only have one dataset named "df" at the end of data wrangling. We need to "merge" our datasets. Do the datasets have a column in common? Yes they do!! the "id" column. But we first need to make sure they are named IDENTICALLY. At the moment they are not identical.
+
+If you try to run the code right now it will fail. 
+
+```{r, echo=TRUE, eval=FALSE}
+tmp <- left_join(df, df.demo, by = "ID")
+```
+
+```{r, echo=TRUE, eval=TRUE}
+    df.mri <- df.mri %>%
+        dplyr::rename(
+          "ID" = "id"
+        )
+```
+
+Now that the columns are named the same we can finally merge them together.
+```{r, echo=TRUE, eval=TRUE}
+df <- merge(df.demo, df.mri, by="ID")
+rm(df.demo, df.mri)  	# remove the datasets that we don't need
+```
+
+We have a column that is called "BMI" which stands for "Body Mass Index". 
+
+Before we finalize everything let's do one more example of "conditional" columns.   Here we create a column called "obese" where the output is conditional based on the values provided in another column (in this case `BMI`). When an individual falls within a range of values there is an associated label. 
+
+```{r, echo=TRUE, eval=TRUE}
+df <- df %>%
+          add_column(., "BMI" = df$weight_kg/(df$height_m^2), .after = "height_m")
+       
+
+df <- df %>%
+        mutate(
+          obese = case_when( 
+            BMI < 18.5 ~ 'Underweight',
+            BMI > 18.5 & BMI < 24.9 ~ 'Normal',
+            BMI > 24.9 & BMI < 29.9 ~ 'Overweight',
+            BMI > 29.9 ~ 'Obese')) 
+ 
+# Factor it accordingly
+  df$obese <- factor(df$obese, ordered = TRUE, levels=c("Underweight", "Normal", "Overweight", "Obese"), exclude = "")
+     
+```
+
+This output is fine but we really don't need that many significant digits. Let's round the outputs
+
+```{r, echo=TRUE, eval=TRUE}
+  df <- df %>% 
+          mutate(across(c("weight_kg", "height_m", "BMI"), ~ round(., 2))) 
+```
+
+
+\pagebreak
+
+# User Submission: Chelsea
+
+This might be the greatest submission I have ever received...
+
+```{r, echo=FALSE, eval=TRUE}
+# you can load your packages here but I did it earlier in the document
+```
+
+We can start by importing the data. I know you wanted to import a STATA file which you can definitely do using the one line with `rio`.
+
+```{r, echo=TRUE, eval=TRUE}
+df <- rio::import("raw/NC_birth_data_edited.xls") %>% 
+select(c("mage", "racemom", "gained", "drink", "tounces", "tgrams", "sex", "smoke", "marital")) %>%
+  rename(
+    "mom_age_years" = "mage",
+    "mom_race_cat" = "racemom",
+    "mom_weight_gained" = "gained",
+    "any_drinking" = "drink",
+    "birth_weight_oz" = "tounces",
+    "birth_weight_g" = "tgrams") # I think this worked - but why did it print it out afterwards? 
+```
+In your submission you said it printed out? Make sure you assign the variable using `<-`. Otherwise it will just print in the console. The first concern with this dataset is that there are missing cases which you can see in your console by asking for a summary.
+
+```{r, echo=TRUE, eval=TRUE}
+summary(df)
+# Below is another line of code I like to run to check this
+sapply(df, function(x) sum(is.na(x)))
+```
+
+I am not sure if this is intentional, but we can get rid of these cases fairly quickly.
+
+```{r, echo=TRUE, eval=TRUE}
+df <- df %>% 
+  drop_na()
+```
+
+```{r, echo=TRUE, eval=FALSE}
+# You also do this selectively using the lines of code below
+df <- df %>%
+  filter(!is.na("smoke") | !is.na("any_drinking")) # remove missing values
+```
+
+A handy-dandy trick I sometimes use is the DataExplorer package right off the bat. It helps give you a brief overview of missing data.
+
+```{r, echo=TRUE, eval=FALSE}
+ DataExplorer::create_report(
+    df, # the name of your dataframe 
+    #y = 'heart_disease',
+    output_dir   = 'output', # where do you want it to be saved relative to your project directory
+    output_file  = 'test.html', # the filename for the report
+    report_title = 'Data Description' # the Title of your report
+  )
+```
+
+Your next concern was that you wanted to create a new variable here called "male_baby", that is created from the old variable called sex and then change the coding scheme so male = 1 & female = 0 (previously male = 1 and female = 2).
+
+There is two ways to go about this. You can create a new column or "recode" the existing column. If there's no reason to keep the old "sex" column then I would simply modify it. I had to modify your import code because you did not select "sex" as a column.
+
+You're coming from STATA (the same commonly occurs in SPSS) which usually requires you code columns as "0" or "1". This is not really required with R. It makes it a bit easier to just use the character string and then create a factor. Otherwise, you will need to define **labels** and **levels**, which can get a tad confusing.
+
+```{r, echo=TRUE, eval=TRUE}
+df <- df %>%
+      mutate(
+        male_baby = case_when( 
+          sex == "1" ~ 'Male',
+          sex == "2" ~ 'Female')) # What is the gender?
+df$male_baby <- factor(df$male_baby , ordered = TRUE, levels = c("Male", "Female"), exclude="")
+
+```
+
+You also wanted to create a new variable "drink_or_smoke", a variable identifying mothers who smoked or drank alcohol during their pregnancy. 
+
+```{r, echo=TRUE, eval=FALSE}
+df <- df %>%
+      mutate(
+        drink_or_smoke = case_when( 
+          any_drinking == "1" | smoke == "1" ~ 'Yes',
+          any_drinking == "0" & smoke == "0" ~ 'No')) 
+df$drink_or_smoke <- factor(df$drink_or_smoke , ordered = TRUE, levels = c("No", "Yes"), exclude=""))
+
+```
+
+**chinese_mom** a variable where mothers who are Chinese and married == 1, and everybody else == 0
+
+
+```{r, echo=TRUE, eval=FALSE}
+df <- df %>%
+  mutate(
+    chinese_mom = case_when( 
+      mom_race_cat == "4" & marital == "1" ~ 'Yes',
+      TRUE ~ 'No')) 
+df$chinese_mom <- factor(df$chinese_mom , ordered = TRUE, levels = c("No", "Yes"), exclude=""))
+
+```
+
+**above_avg_gain**, variable that indicates if mothers who gained more weight during their pregnancy compared to other women of their age category
+
+
+```{r, echo=TRUE, eval=FALSE}
+df <- df %>%
+  mutate(
+    above_avg_gain = case_when( 
+      mom_weight_gained > mean(df$mom_weight_gained) ~ 'Yes',
+      mom_weight_gained < mean(df$mom_weight_gained) ~ 'No')) 
+
+df$above_avg_gain <- factor(df$above_avg_gain , ordered = TRUE, levels = c("No", "Yes"), exclude="")
+
+```
+
+**mom_weight_gain_truncated** , a variable where mom_weight_gained values are truncated at 50 lbs (any values above 50 are transformed into 50)
+
+
+```{r, echo=TRUE, eval=FALSE}
+df <- df %>%
+  mutate(
+    mom_weight_gain_truncated = replace(
+      mom_weight_gained, mom_weight_gained > 50, 50))
+```
+
+
+# Supplementary Resources
+
+*   Learn more about tidy data [here](https://tidyr.tidyverse.org/) 
+*   You can read Hadley Wickham's [paper](https://vita.had.co.nz/papers/tidy-data.pdf) on why the long format or "tidy data" is important.
+*   Read more on data manipulation with dplyr [here](https://bioconnector.github.io/workshops/r-dplyr-yeast.html)
+*   Data Wrangling [cheat sheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
+
+
+# Exercises
+
+1.  Try using some of the examples I have provided to clean your own dataset.
+2.  Merge all your data into one final `df`.
+3. You can check more example on how to `tidy` data on Hadley's [github repo](https://github.com/hadley/tidy-data)
+
+# Next Week
+For next week please run the following lines in your console
+
+```{r, echo=TRUE, eval=FALSE}
+remotes::install_github("yonicd/ggedit")
+devtools::install_github("calligross/ggthemeassist")
+```
