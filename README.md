@@ -23,7 +23,7 @@ Links to the workshop's recordings will be posted here as they become available.
 4. [Essentials of RMarkdown](https://youtu.be/g0VYp7QnlVQ)
 5. [Introductory Statistics #1](https://youtu.be/sv8pQLOR77Q)
 	* [Example Modifying for your data](https://www.youtube.com/watch?v=FGI-dmes3cw) 	
-7. [Introductory Statistics #2](https://www.youtube.com/watch?v=hfM7P4TO26I) **Note:** HD version may take a few more hours to process
+7. [Introductory Statistics #2](https://www.youtube.com/watch?v=hfM7P4TO26I)
 8. Data Wrangling
 9. Plotting using the Grammar of Graphics (ggplot)
 
