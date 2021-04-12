@@ -321,7 +321,7 @@ df <- df %>%
         drink_or_smoke = case_when( 
           any_drinking == "1" | smoke == "1" ~ 'Yes',
           any_drinking == "0" & smoke == "0" ~ 'No')) 
-df$drink_or_smoke <- factor(df$drink_or_smoke , ordered = TRUE, levels = c("No", "Yes"), exclude=""))
+df$drink_or_smoke <- factor(df$drink_or_smoke , ordered = TRUE, levels = c("No", "Yes"), exclude="")
 
 ```
 
