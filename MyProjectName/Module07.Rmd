@@ -51,7 +51,7 @@ We are going to start with a nice real-world example. I ran an experiment recent
 1. Demographics dataset (raw/data.xlsx, demographics)
 2. MRI dataset
 
-```{r part1a, echo=FALSE}
+```{r part1a, echo=FALSE, eval=TRUE}
 # Load/Install required packages ---------------------
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(rio, ggplot2, esquisse, Rmisc, tidyverse, car, janitor, hablar, rstatix, report, remotes, ggpubr, ggstatsplot, jtools, sjPlot, sjmisc, parameters, easystats, apastats, sjlabelled, googlesheets4, DataExplorer) #p_load This function is a wrapper for library and require. It checks to see if a package is installed, if not it attempts to install the package from CRAN and/or any other repository in the pacman repository list.
@@ -65,22 +65,24 @@ pacman::p_load(rio, ggplot2, esquisse, Rmisc, tidyverse, car, janitor, hablar, r
 ```
 Here we start by importing a demographic dataset containing information on the participants. We also have a second dataset which contains MRI data.
 
-```{r load, echo=FALSE}
+```{r load, echo=FALSE, eval=TRUE}
 # Load your data ----------
-df.demo <- import("raw/data.xlsx", which = "demographics") %>% # Imports the sheet with demographic data
-  clean_names() %>% # Clean the column names
+df.demo <- rio::import("raw/data.xlsx", which = "demographics") %>% # Imports the sheet with demographic data
+  janitor::clean_names() %>% # Clean the column names
   dplyr::rename(
     "ID" = "study_id",
     "Group" = "group"
   )
 
 df.mri <- import("raw/data.xlsx", which = "MRI-data") %>%
-  clean_names() %>%                             # clean column names
-  remove_empty(c("rows", "cols")) %>%           # remove the empty rows and columns
-  remove_constant(na.rm = TRUE, quiet = FALSE)  # remove the column of all "Yes" values 
+  janitor::clean_names() %>%                             # clean column names
+  janitor::remove_empty(c("rows", "cols")) %>%           # remove the empty rows and columns
+  janitor::remove_constant(na.rm = TRUE, quiet = FALSE)  # remove the column of all "Yes" values 
 ```
 
 ## Part II: Common Cleaning Tasks
+
+### Renaming 
 Let's take a look at `df.mri`. Clearly there are some names that need cleaning so let's start by renaming a column
 
 ```{r, echo=TRUE, eval=FALSE}
@@ -92,7 +94,10 @@ Let's take a look at `df.mri`. Clearly there are some names that need cleaning s
 
 ```
 
-We can also `filter` results based on wheter or not they completed an MRI.
+
+### Filtering
+
+We can also `filter` results based on whether or not they completed an MRI.
 
 ```{r, echo=TRUE, eval=FALSE}
   df.mri <- df.mri %>%
@@ -116,6 +121,10 @@ This seems a tad cumbersome...we can add several filters in one command as shown
         filter(site_mri == "Calgary" & completed_mri == "1") # remove all data that is not from Calgary
 ```
 
+```{r, echo=TRUE, eval=FALSE}
+mtcars %>% 
+        filter(str_detect(rowname, "Merc")) # this will filter everything that has the pattern "Merc" in the column
+```
 This is great! But if we take a closer look at the datasets, there are more cases in `df.mri` than `df.demo`. I only want the data where the subject is present in both datasets.
    
    
@@ -124,7 +133,7 @@ This is great! But if we take a closer look at the datasets, there are more case
         filter(id %in% unique(df.demo$ID)) # I only want IDs that are in present in df.demo
 ```
 
- At the moment some cells in our df.mri columns contains text. Which is causing issues when we import. Below we force it to convert to a numeric column this will cause "text" columns to become blank (which we want). Below we use the `hablar` package to fix this error.
+At the moment some cells in our df.mri columns contains text. Which is causing issues when we import. Below we force it to convert to a numeric column this will cause "text" columns to become blank (which we want). Below we use the `hablar` package to fix this error.
 
 ```{r, echo=TRUE, eval=FALSE}
 # Converts some of the columns into numeric -- requires hablar library
@@ -174,12 +183,10 @@ Now this is all great and good but its taken us over a few pages of steps. We ca
 df.mri <- df.mri %>%
         dplyr::rename(
           # "NewName" = "OldName"
-          "completed_mri" ="completed_mri_1_yes_0_no"
-        ) %>%
+          "completed_mri" ="completed_mri_1_yes_0_no") %>%
         filter(site_mri == "Calgary" & completed_mri == "1") %>%         # remove all data that is not from Calgary and those who did not complete an MRI
         filter(id %in% unique(df.demo$ID)) %>%                           # I only want IDs that are in present in df.demo
         suppressWarnings(hablar::convert(num(left_af:right_uf))) %>% # Converts some of the columns into numeric -- requires hablar library
-        
         gather(mriloc, dti_value, left_cst:right_uf) %>%
         dplyr::arrange(id) %>%
         mutate(hemisphere = case_when(
@@ -256,7 +263,7 @@ We can start by importing the data. I know you wanted to import a STATA file whi
 ```{r, echo=TRUE, eval=TRUE}
 df <- rio::import("raw/NC_birth_data_edited.xls") %>% 
 select(c("mage", "racemom", "gained", "drink", "tounces", "tgrams", "sex", "smoke", "marital")) %>%
-  rename(
+  dplyr::rename(
     "mom_age_years" = "mage",
     "mom_race_cat" = "racemom",
     "mom_weight_gained" = "gained",
@@ -376,6 +383,7 @@ df <- df %>%
 1.  Try using some of the examples I have provided to clean your own dataset.
 2.  Merge all your data into one final `df`.
 3. You can check more example on how to `tidy` data on Hadley's [github repo](https://github.com/hadley/tidy-data)
+4. Great [breakdown](https://statisticsglobe.com/r-dplyr-join-inner-left-right-full-semi-anti) on other forms of merging multiple datasets being the `merge` function.
 
 # Next Week
 For next week please run the following lines in your console
