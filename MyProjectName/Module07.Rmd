@@ -289,7 +289,7 @@ df <- df %>%
 ```{r, echo=TRUE, eval=FALSE}
 # You also do this selectively using the lines of code below
 df <- df %>%
-  filter(!is.na("smoke") | !is.na("any_drinking")) # remove missing values
+  filter(!is.na(smoke) | !is.na(any_drinking)) # remove missing values
 ```
 
 A handy-dandy trick I sometimes use is the DataExplorer package right off the bat. It helps give you a brief overview of missing data.
