@@ -24,7 +24,7 @@ Links to the workshop's recordings will be posted here as they become available.
 5. [Introductory Statistics #1](https://youtu.be/sv8pQLOR77Q)
 	* [Example Modifying for your data](https://www.youtube.com/watch?v=FGI-dmes3cw) 	
 7. [Introductory Statistics #2](https://www.youtube.com/watch?v=hfM7P4TO26I)
-8. [Data Wrangling](https://youtu.be/6qhyMkETKtY) **HD Version Processing**
+8. [Data Wrangling](https://youtu.be/6qhyMkETKtY)
 9. Plotting using the Grammar of Graphics (ggplot)
 
 
