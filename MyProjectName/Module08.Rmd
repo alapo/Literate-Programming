@@ -349,5 +349,5 @@ Learn more about tidy data [here](https://tidyr.tidyverse.org/)
 
 You may be contacted to submit a review on the whole workshop. I greatly appreciate all of you who toughed it out and I hope the workshop was useful for you!!
 
-
+You can find the survey to fill out [here](https://www.surveymonkey.com/r/YR52JT6)
 
