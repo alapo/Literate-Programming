@@ -1,0 +1,353 @@
+---
+date: "`r Sys.Date()`"
+author: "Dr. Andrew Lapointe"
+title: "Module 08: Data Visualization"
+output: 
+  officedown::rdocx_document:
+    reference_docx: styles/template.docx          # This is the template that will style my document when its knit
+link-citations: yes
+linkcolor: red
+citecolor: blue
+#bibliography: G:/My Drive/ZoteroRPlugin/My Library.bib  # you will need to export your own bibliography
+zotero: TRUE
+#csl: styles/Citation Styles/spectroscopy-letters.csl    # This sets the style of formatting for references
+---
+
+```{r setup, include=FALSE, cache=FALSE, echo=FALSE}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(apastats,tidyverse, officedown, officer) # Load required packages
+
+knitr::opts_chunk$set(fig.cap = TRUE,
+                      fig.path = 'images/',
+                      echo = TRUE,
+                      eval = TRUE,
+                      warning = FALSE, 
+                      message = FALSE,
+                      include = TRUE,
+                      dpi = 300,
+                      crop = TRUE # This will remove the whitespace surrounding an image see here: https://bookdown.org/yihui/rmarkdown-cookbook/crop-plot.html
+                      # The following chunks only work with PDF outputs
+                      #fig.pos = 'H', # only works with PDFs
+                      #fig.align = 'center', # only works with PDFs
+                      #out.height="100%",  out.width="100%") # only works with PDFs
+)
+
+# Start loading data into the environment
+use_betterbiblatex = TRUE
+
+```
+
+# Table of content
+
+<!---BLOCK_TOC--->
+
+\pagebreak
+
+
+# Part 1: Importing
+
+We are going to re-use `df` which we created in Module 07 to create some nice figures. 
+
+```{r part1a, echo=FALSE}
+# Load/Install required packages ---------------------
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(conflicted,rio, ggplot2, esquisse, Rmisc, tidyverse, car, janitor, hablar, rstatix, report, remotes, ggpubr, ggstatsplot, jtools, sjPlot, sjmisc, parameters, easystats, apastats, sjlabelled, rio, googlesheets4, beepr, ggraptR) #p_load This function is a wrapper for library and require. It checks to see if a package is installed, if not it attempts to install the package from CRAN and/or any other repository in the pacman repository list.
+
+#devtools::install_github("brooke-watson/BRRR")
+pacman::p_load_gh(c("brooke-watson/BRRR"))
+conflicted::conflict_prefer("rename", "dplyr")
+conflicted::conflict_prefer("filter", "dplyr")
+conflicted::conflict_prefer("clean_names", "janitor")
+conflicted::conflict_prefer("mutate", "dplyr")
+conflicted::conflict_prefer("summarise", "dplyr")
+pacman::p_unload(conflicted)
+```
+
+# Preamble
+
+I would highly recommend taking a look at a few resources which will go into greater detail than I can in a Module
+
+1. [ggplot2 Explorer](http://databall.co/shiny/shinyggplot/?utm_source=r-bloggers.com&utm_medium=referral&utm_campaign=blogpost&utm_content=text)
+2. [shinyData](https://roose.shinyapps.io/shinyData/)
+3. [R Graph Catalog](https://github.com/jennybc/r-graph-catalog)
+
+You can also check out more information on the Grammar of Graphics [here](https://joss.theoj.org/papers/10.21105/joss.00568
+) and [here](https://www.mathworks.com/matlabcentral/fileexchange/54465-gramm-complete-data-visualization-toolbox-ggplot2-r-like)
+
+There are 2 packages that provide a GUI for ggplot2. These are 
+
+* [esquisse](https://github.com/dreamRs/esquisse)
+  - Quick Demo can be found [here](https://dreamrs.github.io/esquisse/)
+* [ggraptR](https://github.com/cargomoose/ggraptR)
+  - Read more [here](https://cran.r-project.org/web/packages/ggraptR/vignettes/ggraptR.html)
+
+Although you can make "theme" changes in both ggraptR and esquisse, but there are 2 additional packages I would recommend checking out.
+ 
+* [ggThemeAssist](https://github.com/calligross/ggthemeassist)
+* [ggedit](https://github.com/yonicd/ggedit)
+  - Demo [here](https://yonicd.github.io/ggedit/)
+
+# Getting Started
+
+Here we start by importing a demographic dataset containing information on the participants. We also have a second dataset which contains MRI data.
+
+# TLDR Version
+```{r, echo=FALSE}
+# Load your data ----------
+df <- rio::import("raw/ChAMP_Oncology.sav") %>%
+  select(-c("DateofAssessment", "IQScale", "SecondaryDiagnosis", "typeofradiation", "treatmentprotocol", "PatientGroupBTvsALL", "RadiationTOTALDose")) %>%
+  dplyr::rename(
+    "Group" = "PrimaryDiagnosis_A",
+    "IQ" = "FullScaleIQ",
+    "Age" = "ChildsageatAssessment",
+    "ID" = "UniqueID",
+    "Radiation" = "RADIATIONNUMERIC",
+    "Score" = "ProcessingSpeed"
+  ) %>%
+  mutate(Group = str_replace_all(Group, "Onc-CNS Tumor", "Brain Cancer") %>%
+         str_replace_all("Onc-Leukemia", "Leukemia"))
+
+```
+
+We can use the `esquisse` package to make our life simple. Don't forget to "assign" it a name so you can save it later. You can open `esquisse` from the Add-in drop-down or run the following code in your console `esquisse::esquisser(df)`
+
+```{r, eval=FALSE}
+# Paste the code from esquisse here
+
+
+```
+
+You can also try out `ggraptR` by calling it in your console 
+
+
+```{r, eval=FALSE}
+ggraptR(df)
+```
+
+## Issues with order on axes
+
+When a column is being stored as a "character" the order of appearance in ggplot is alphabetically. But we can change this by making it a factor. Factors are required when running your statistics, but optional for plotting.
+
+```{r}
+df$Group <- factor(df$Group, levels=c("Brain Cancer", "Leukemia"), ordered=TRUE) # Data is imported type "character" we need to change that to factors before running statistics.
+#levels(df$Group) # Confirm that our data is ordered properly.
+df$ID <- as.factor(df$ID)
+
+df$Sex <- factor(df$Sex, levels=c("Male", "Female"), ordered=TRUE) # Data is imported type "character" we need to change that to factors before running statistics.
+```
+
+
+Finally, we will probably want to save our plot in our `/images` directory. 
+
+```{r, eval=FALSE}
+
+ggsave("images/myPlot.png", plot1, width=11, height=8.5, dpi=300)
+
+```
+
+# Part II: Getting Sophisticated
+
+One thing we cannot accomplish with GUIs is the stacking of geometries. I will show an example of this in my slides. We also cannot loop through several figures. Let me show you an example. 
+
+
+## MRI Data Example (Advanced)
+
+
+```{r, echo=FALSE}
+# Load your data ----------
+df.demo <- import("raw/data.xlsx", which = "demographics") %>% # Imports the sheet with demographic data
+  janitor::clean_names() %>% # Clean the column names
+  dplyr::rename(
+    "ID" = "study_id",
+    "Group" = "group"
+  )
+
+df.mri <- import("raw/data.xlsx", which = "MRI-data") %>%
+  janitor::clean_names() %>%                             # clean column names
+  janitor::remove_empty(c("rows", "cols")) %>%           # remove the empty rows and columns
+  janitor::remove_constant(na.rm = TRUE, quiet = FALSE)  # remove the column of all "Yes" values 
+
+df.mri <- df.mri %>%
+  dplyr::rename(
+    # "NewName" = "OldName"
+    "completed_mri" ="completed_mri_1_yes_0_no") %>%
+  filter(site_mri == "Calgary" & completed_mri == "1") %>%         # remove all data that is not from Calgary and those who did not complete an MRI
+  filter(id %in% unique(df.demo$ID)) %>%                           # I only want IDs that are in present in df.demo
+  suppressWarnings(hablar::convert(num(left_af:right_uf))) %>% # Converts some of the columns into numeric -- requires hablar library
+  select(-c("left_af", "right_af")) %>%       
+  gather(mriloc, dti_value, left_cst:right_uf) %>%
+  dplyr::arrange(id) %>%
+  mutate(hemisphere = case_when(
+    str_contains(mriloc, "left") == TRUE ~ "Left",
+    str_contains(mriloc, "left") == FALSE ~ "Right"
+  )) 
+
+ df.mri <- df.mri %>%
+        dplyr::rename(
+          "ID" = "id"
+        )
+ 
+ df <- merge(df.demo, df.mri, by="ID") %>% 
+   filter(Group != "OI")
+ 
+ df$sex <- factor(df$sex, levels=c("M", "F"), ordered=TRUE)
+ df$Group <- factor(df$Group, levels=c("Control", "TBI"), ordered=TRUE)
+ df$ID <- as.factor(df$ID)
+ 
+ beepr::beep(sound = 8, expr = NULL)
+```
+
+## Building by layer
+
+We can start with the easiest version of a figure which includes the 3 fundamental layers
+
+1. Data
+2. Aesthetics
+3. Geometries
+
+```{r, eval=FALSE}
+          ggplot(df) +
+          aes(y=Score, x = Group) +
+          geom_boxplot()
+```
+
+We can add a colour to this 
+
+```{r, eval=FALSE}
+        ggplot(df) +
+          aes(y=Score, x = Group, color = sex) +
+          geom_boxplot()
+
+```
+
+## Scales
+Scales are a layers to modify the look of your figure. These are not required but can be nice to add when you want to polish the final version of your figure.
+
+```{r, eval=FALSE}
+scale_color_manual(~MyVariable)
+scale_fill_manual(~MyVariable)
+scale_color_manual(~MyVariable)
+```
+
+### labs
+As part of the scales layer you can also define `labs`. Which can be a predefined variable or custom text. Using predefined variables can be handy when you are looping through several figures. 
+
+```{r, eval=FALSE}
+x.text <- "My Text"
+title.text <- "My Title"
+labs(x = x.text, 
+     y = "My Y Axis Text", 
+     color = "Group",
+    title = title_text)
+```
+
+
+## Themes
+
+Below I include the most common theme modifications. You do not need to include these.
+
+```{r, eval=FALSE}
+
+theme(
+		legend.position = “top”, # Move the legend to the top of the figure
+        legend.title = element_text(size = 12), # Change size of text in legend
+        plot.title = element_text(hjust = 0.5), # Center the text title
+        plot.caption = element_text(face = "italic"),
+        #legend.key = element_rect(colour = 'white', fill = 'white', size = 0.5, linetype='dashed'),
+        #legend.key.size = unit(2, "cm"),
+        #legend.key.width = unit(2, "cm"),
+        legend.text = element_text(size = 10)
+ )
+
+```
+
+
+Now we can really go overboard
+
+
+```{r, eval=FALSE}
+        plot1 <- ggplot(df) +
+          aes(y=Score, x = Group) +
+          geom_boxplot(outlier.shape = NA) +
+          geom_jitter(size=8, aes(shape=sex, color=sex), position = position_dodge(.4)) +
+          #geom_point(size = 8, position= "dodge" +
+          scale_shape_manual(values=c("👧","👦"), name = "Sex", labels = c("Female", "Male")) + # I need 9 values (I for each ID)
+          scale_color_manual(values=c('springgreen4', 'red4'), name = "Sex", labels = c("Female", "Male"))  +
+          labs(x = "Group", y = "Concussion Test Score", title = "My Plot Name") +
+          theme_minimal() +
+          theme(legend.position = "top",
+                legend.title = element_text(size = 12),
+                plot.title = element_text(hjust = 0.5),
+                plot.caption = element_text(face = "italic"),
+                #legend.key = element_rect(colour = 'white', fill = 'white', size = 0.5, linetype='dashed'),
+                #legend.key.size = unit(2, "cm"),
+                #legend.key.width = unit(2, "cm"),
+          )
+
+```
+
+In every case we are going to want to save our figure in our `/images` directory so we can call it in our manuscript.Rmd at a later time.
+
+```{r, eval=FALSE}
+   ggsave("images/plot1.png", plot1, width=11, height=8.5, dpi=300)
+```
+
+If you are just getting started ignore this next part, but you can dynamically assign variables within a loop in R. Below I show an example where a plot is made for every MRI location
+
+   
+```{r, eval=FALSE}
+    for(xx in 1:length(unique(df$mriloc))){
+      
+      plot1 <- ggplot(data = df %>% 
+                        filter(mriloc == unique(df$mriloc)[xx])) +
+      aes(x = Group, y = dti_value) +
+        geom_boxplot(outlier.size = 0) + 
+        geom_jitter(aes(color = ID, shape = sex), size = 10, position=position_jitter(width=.25, height=0)) +
+          scale_shape_manual(values=c("👧","👦"), name = "Sex", labels = c("Female", "Male")) +
+        labs(x = "Group", 
+             y = paste0(unique(df$mriloc)[xx]), 
+             title = paste0("DTI in ", unique(df$mriloc)[xx])) +
+        # title = paste0(str_replace_all(MetricNames[xx], c("~" =" ")), " by Day"), fill = "Subject") +
+        theme(plot.title = element_text(hjust = 0.5),
+              legend.position = "top")  +
+        guides(color = FALSE) # This line is going to remove the extra legend we don't really need
+      
+      # Save the plot 
+      dir_lbl = paste0("images/DTI/", unique(df$mriloc)[xx],".png") #using paste0 removes the spaces
+      ggsave(dir_lbl, plot1, width=11, height=8.5, dpi=400)
+      
+    }
+rm(dir_lbl, xx) # clear environment of variables we don't need
+
+BRRR::skrrrahh(35)
+
+
+
+
+```
+
+We can also further modify this. Again one step at a time until we like the final result.
+
+\pagebreak
+
+# Supplementary Resources
+
+1. [Grammar of Graphics](https://towardsdatascience.com/a-comprehensive-guide-to-the-grammar-of-graphics-for-effective-visualization-of-multi-dimensional-1f92b4ed4149)
+Learn more about tidy data [here](https://tidyr.tidyverse.org/) 
+2. Hadley Wickham's [Paper](https://vita.had.co.nz/papers/layered-grammar.pdf)
+3. [Book](https://cfss.uchicago.edu/notes/grammar-of-graphics/) with more examples
+4. More on the [layers](https://ggplot2.tidyverse.org/reference/) of ggplot2.
+5. Another GUI for beginners called ggraptR can be found [here](https://cran.r-project.org/web/packages/ggraptR/vignettes/ggraptR.html) and on [GitHib](https://github.com/cargomoose/ggraptR)
+
+# Exercises
+
+1.  Try using some of the examples I have provided to clean your own dataset.
+2.  Merge all your data into one final `df`.
+3. You can check more example on how to `tidy` data on Hadley's [github repo](https://github.com/hadley/tidy-data)
+
+# Next Week
+
+You may be contacted to submit a review on the whole workshop. I greatly appreciate all of you who toughed it out and I hope the workshop was useful for you!!
+
+
+
