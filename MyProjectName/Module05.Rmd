@@ -50,7 +50,7 @@ if (!require("pacman")) install.packages("pacman") # if pacman is not installed,
 pacman::p_load(effectsize, ggpubr, ggstatsplot, googlesheets4, janitor, jtools, knitr, parameters, rio, remotes, report, rstatix, tidyverse,  see, sjPlot, sjmisc) # load/install required packages
 
 # Load your data ----------
-df <- read_sheet("https://docs.google.com/spreadsheets/d/1fFVmBFpdAKxzLMT8dx7pZm48mo9CE3kIwYhrkaZj7NM", sheet = "1") 
+df <- read_sheet("https://docs.google.com/spreadsheets/d/1knEo48qeQPtxhzWjgmJf7Sqk7zVAa8NExS6HpXKlNgc", sheet = "1") 
 
 ```
 
@@ -138,7 +138,7 @@ df <- rio::import("data/data.sav")
 # Completed in part 1
 
 # Load your data ----------
-df <- read_sheet("https://docs.google.com/spreadsheets/d/1fFVmBFpdAKxzLMT8dx7pZm48mo9CE3kIwYhrkaZj7NM", sheet = "anova_data")  # requires 'googlesheets4' library
+df <- read_sheet("https://docs.google.com/spreadsheets/d/1knEo48qeQPtxhzWjgmJf7Sqk7zVAa8NExS6HpXKlNgc", sheet = "anova_data")  # requires 'googlesheets4' library
 
 df$Group <- factor(df$Group, levels=c("Control", "OI", "TBI"), ordered=TRUE) # Data is imported type "character" we need to change that to factors before running statistics.
 levels(df$Group) # Confirm that our data is ordered properly.
